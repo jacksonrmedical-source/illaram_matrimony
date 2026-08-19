@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'verifications',
     'interests',
     'moderation',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -169,3 +170,7 @@ SPECTACULAR_SETTINGS = {
 
 # Freemium limits
 DAILY_INTEREST_LIMIT = 5  # Maximum interests a free user can send per day
+
+# Email settings (development)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@illaram.com'

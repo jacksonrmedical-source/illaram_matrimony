@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.conf import settings
 from .models import Interest
 from .serializers import InterestSerializer
+from notifications.services import send_email_notification, send_sms_notification
 
 
 class InterestViewSet(viewsets.ModelViewSet):
@@ -31,18 +32,23 @@ class InterestViewSet(viewsets.ModelViewSet):
             current_count = cache.get(cache_key, 0)
 
             if current_count >= limit:
-                # Use Response to return a custom error
                 from rest_framework.exceptions import Throttled
                 raise Throttled(detail="Daily interest limit reached. Upgrade to premium for unlimited interests.")
 
-            # Save the interest first
+            interest = serializer.save(sender=profile)
+            cache.set(cache_key, current_count + 1, timeout=86400)
+        else:
             interest = serializer.save(sender=profile)
 
-            # Increment the counter
-            cache.set(cache_key, current_count + 1, timeout=86400)  # 24 hours
-            return interest
-        else:
-            return serializer.save(sender=profile)
+        # Send notifications to receiver
+        receiver_email = interest.receiver.user.email
+        if receiver_email:
+            send_email_notification(
+                "You received a new interest on Illaram",
+                f"{profile.full_name} has sent you an interest. Log in to view.",
+                receiver_email
+            )
+        send_sms_notification(interest.receiver.user.phone, "You received a new interest on Illaram.")
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
@@ -51,6 +57,17 @@ class InterestViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Not allowed'}, status=status.HTTP_403_FORBIDDEN)
         interest.status = Interest.Status.ACCEPTED
         interest.save()
+
+        # Send notifications to sender
+        sender_email = interest.sender.user.email
+        if sender_email:
+            send_email_notification(
+                "Your interest was accepted",
+                f"{interest.receiver.full_name} accepted your interest. You can now chat.",
+                sender_email
+            )
+        send_sms_notification(interest.sender.user.phone, "Your interest was accepted on Illaram.")
+
         return Response(InterestSerializer(interest).data)
 
     @action(detail=True, methods=['post'])
