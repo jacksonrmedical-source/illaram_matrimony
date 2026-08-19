@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'profiles',
     'verifications',
     'interests',
+    'moderation',
 ]
 
 MIDDLEWARE = [
