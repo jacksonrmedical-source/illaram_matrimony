@@ -1,24 +1,30 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import IndividualProfile, ParentProfile, FamilyLink, Photo
 from .serializers import IndividualProfileSerializer, ParentProfileSerializer, FamilyLinkSerializer, PhotoSerializer
 from .permissions import IsOwnerOrReadOnly
+from .filters import IndividualProfileFilter
 
 
 class IndividualProfileViewSet(viewsets.ModelViewSet):
     serializer_class = IndividualProfileSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     queryset = IndividualProfile.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = IndividualProfileFilter
+    search_fields = ['full_name', 'education', 'profession', 'about_me', 'location_city', 'location_state', 'location_country']
 
     def get_queryset(self):
         if self.request.user.is_staff:
             return IndividualProfile.objects.all()
-        return IndividualProfile.objects.all()
+        return IndividualProfile.objects.all()  # All authenticated users can browse
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -95,7 +101,6 @@ class PhotoViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def view(self, request, pk=None):
-        # Retrieve the photo directly, bypassing the filtered queryset
         photo = get_object_or_404(Photo, pk=pk)
         user = request.user
 

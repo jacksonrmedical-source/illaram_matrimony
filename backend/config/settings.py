@@ -161,4 +161,5 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Illaram API',
     'DESCRIPTION': 'Backend API for Illaram Tamil Matrimony Platform',
     'VERSION': '1.0.0',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
