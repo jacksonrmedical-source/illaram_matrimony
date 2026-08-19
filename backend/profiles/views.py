@@ -24,10 +24,39 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             return IndividualProfile.objects.all()
-        return IndividualProfile.objects.all()  # All authenticated users can browse
+        return IndividualProfile.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def request_photo(self, request, pk=None):
+        """Send an interest with photo_request=True to the target profile."""
+        profile = self.get_object()
+        user = request.user
+
+        if not hasattr(user, 'individual_profile'):
+            return Response({"detail": "You must have an individual profile to request photos."}, status=status.HTTP_403_FORBIDDEN)
+
+        if profile == user.individual_profile:
+            return Response({"detail": "You cannot request photos from yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from interests.models import Interest
+        from interests.serializers import InterestSerializer
+
+        existing = Interest.objects.filter(sender=user.individual_profile, receiver=profile).first()
+        if existing:
+            existing.photo_request = True
+            existing.save()
+            return Response(InterestSerializer(existing).data, status=status.HTTP_200_OK)
+
+        interest = Interest.objects.create(
+            sender=user.individual_profile,
+            receiver=profile,
+            status=Interest.Status.SENT,
+            photo_request=True
+        )
+        return Response(InterestSerializer(interest).data, status=status.HTTP_201_CREATED)
 
 
 class ParentProfileViewSet(viewsets.ModelViewSet):
@@ -104,11 +133,9 @@ class PhotoViewSet(viewsets.ModelViewSet):
         photo = get_object_or_404(Photo, pk=pk)
         user = request.user
 
-        # Owner sees original
         if hasattr(user, 'individual_profile') and photo.profile == user.individual_profile:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
 
-        # Check mutual interest
         from interests.models import Interest
         mutual = False
         if hasattr(user, 'individual_profile'):
