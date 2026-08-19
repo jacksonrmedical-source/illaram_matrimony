@@ -17,9 +17,11 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
     serializer_class = IndividualProfileSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     queryset = IndividualProfile.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = IndividualProfileFilter
     search_fields = ['full_name', 'education', 'profession', 'about_me', 'location_city', 'location_state', 'location_country']
+    ordering_fields = ['last_active', 'created_at', 'date_of_birth']
+    ordering = ['-last_active']
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -133,9 +135,11 @@ class PhotoViewSet(viewsets.ModelViewSet):
         photo = get_object_or_404(Photo, pk=pk)
         user = request.user
 
+        # Owner sees original
         if hasattr(user, 'individual_profile') and photo.profile == user.individual_profile:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
 
+        # Check mutual interest
         from interests.models import Interest
         mutual = False
         if hasattr(user, 'individual_profile'):
