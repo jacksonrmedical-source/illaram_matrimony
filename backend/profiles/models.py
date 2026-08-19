@@ -106,3 +106,18 @@ class FamilyLink(models.Model):
     ], default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.parent.full_name} -> {self.individual.full_name} ({self.status})"
+
+
+class Photo(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    profile = models.ForeignKey(IndividualProfile, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='profile_photos/')
+    blurred_image = models.ImageField(upload_to='profile_photos/blurred/', blank=True, null=True)
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo for {self.profile.full_name}"
