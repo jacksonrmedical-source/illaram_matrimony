@@ -5,13 +5,16 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls')),
-    path('api/', include('profiles.urls')),
-    path('api/', include('verifications.urls')),
-    path('api/', include('interests.urls')),
+    # Exact-match paths first (good practice)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # App includes with distinct prefixes
+    path('admin/', admin.site.urls),
+    path('api/accounts/', include('accounts.urls')),
+    path('api/profiles/', include('profiles.urls')),
+    path('api/verifications/', include('verifications.urls')),
+    path('api/interests/', include('interests.urls')),
 ]
 
 if settings.DEBUG:

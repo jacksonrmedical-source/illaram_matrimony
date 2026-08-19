@@ -78,11 +78,11 @@ DATABASES = {
     }
 }
 
-# Cache (Redis)
+# Cache
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/0'),
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'illaram-dev-cache',
     }
 }
 
