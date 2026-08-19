@@ -163,3 +163,6 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
+
+# Freemium limits
+DAILY_INTEREST_LIMIT = 5  # Maximum interests a free user can send per day
