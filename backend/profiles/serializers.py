@@ -6,10 +6,33 @@ from .models import IndividualProfile, ParentProfile, FamilyLink, Photo
 
 
 class IndividualProfileSerializer(serializers.ModelSerializer):
+    completeness_score = serializers.SerializerMethodField()
+
     class Meta:
         model = IndividualProfile
         fields = '__all__'
-        read_only_fields = ('user', 'created_at', 'updated_at')
+        read_only_fields = ('user', 'created_at', 'updated_at', 'completeness_score')
+
+    def get_completeness_score(self, obj):
+        # List of field names to consider for completeness
+        important_fields = [
+            'full_name', 'gender', 'date_of_birth', 'height_cm', 'marital_status',
+            'education', 'profession', 'income_range', 'location_city',
+            'location_state', 'location_country', 'about_me',
+            'tamil_language_importance', 'festivals', 'spiritual_orientation',
+            'diet', 'family_involvement', 'relocation_willingness',
+            'caste', 'subcaste', 'gothram', 'natchathiram', 'rasi'
+        ]
+
+        filled = 0
+        total = len(important_fields)
+
+        for field in important_fields:
+            value = getattr(obj, field, None)
+            if value is not None and value != '' and value != [] and value != {}:
+                filled += 1
+
+        return int((filled / total) * 100)
 
 
 class ParentProfileSerializer(serializers.ModelSerializer):
