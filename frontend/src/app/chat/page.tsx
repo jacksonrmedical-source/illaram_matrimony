@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
 import { IndividualProfile } from '@/types';
@@ -39,11 +40,11 @@ interface Message {
 
 export default function ChatPage() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get current user's profile to know own ID
   const { data: myProfile } = useQuery<IndividualProfile>({
     queryKey: ['myProfile'],
     queryFn: async () => {
@@ -52,7 +53,6 @@ export default function ChatPage() {
     },
   });
 
-  // Fetch conversations
   const { data: conversationsData, isLoading: convLoading } = useQuery<{ results: Conversation[] }>({
     queryKey: ['conversations'],
     queryFn: async () => {
@@ -61,7 +61,6 @@ export default function ChatPage() {
     },
   });
 
-  // Fetch messages for selected conversation
   const { data: messagesData, isLoading: msgLoading } = useQuery<Message[]>({
     queryKey: ['messages', selectedConversationId],
     queryFn: async () => {
@@ -88,6 +87,13 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
+    const convIdParam = searchParams.get('conversation_id');
+    if (convIdParam) {
+      setSelectedConversationId(convIdParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messagesData]);
 
@@ -107,7 +113,6 @@ export default function ChatPage() {
   return (
     <AuthGuard>
       <div className="flex h-screen max-w-6xl mx-auto">
-        {/* Conversation list */}
         <div className="w-1/3 border-r bg-white overflow-y-auto">
           <h2 className="p-4 text-xl font-bold border-b">Chats</h2>
           {conversationsData?.results?.length === 0 ? (
@@ -137,7 +142,6 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Message area */}
         <div className="flex-1 flex flex-col">
           {!selectedConversationId ? (
             <div className="flex-1 flex items-center justify-center text-gray-400">
