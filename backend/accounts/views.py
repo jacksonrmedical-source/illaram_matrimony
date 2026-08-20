@@ -4,7 +4,6 @@ from django.core.cache import cache
 from rest_framework import status, views, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
 from .models import User
 from .serializers import PhoneSerializer, OTPSerializer, RegistrationSerializer
 
@@ -23,10 +22,8 @@ class RequestOTPView(views.APIView):
         phone = serializer.validated_data['phone']
 
         otp = generate_otp()
-        # In production, send OTP via SMS (e.g., Twilio, MSG91)
-        # For development, store in cache for 5 minutes
         cache.set(f'otp:{phone}', otp, timeout=300)
-        print(f"OTP for {phone}: {otp}")  # Remove in production
+        print(f"OTP for {phone}: {otp}")
 
         return Response({"detail": "OTP sent successfully"}, status=status.HTTP_200_OK)
 
@@ -58,12 +55,35 @@ class RegisterView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = RegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        phone = request.data.get('phone')
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+        email = request.data.get('email', '')
+        role = request.data.get('role', 'individual')
+
+        # Basic validation
+        if not phone or not password or not confirm_password:
+            return Response({"detail": "phone, password, confirm_password are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if password != confirm_password:
+            return Response({"detail": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(password) < 8:
+            return Response({"detail": "Password must be at least 8 characters."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user already exists (created during OTP verification)
+        user, created = User.objects.get_or_create(phone=phone)
+
+        # Update user fields
+        user.set_password(password)
+        user.email = email if email else None
+        if role in ['individual', 'parent', 'admin']:
+            user.role = role
+        else:
+            user.role = 'individual'
+        user.save()
+
         refresh = RefreshToken.for_user(user)
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user_id': str(user.id),
-        }, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
