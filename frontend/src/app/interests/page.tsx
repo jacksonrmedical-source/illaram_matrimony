@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
 import { IndividualProfile } from '@/types';
@@ -19,7 +20,9 @@ interface Interest {
 
 export default function InterestsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [tab, setTab] = useState<'received' | 'sent'>('received');
+  const [error, setError] = useState('');
 
   const { data: myProfile, isLoading: profileLoading } = useQuery<IndividualProfile>({
     queryKey: ['myProfile'],
@@ -55,6 +58,19 @@ export default function InterestsPage() {
     },
   });
 
+  const startConversationMutation = useMutation({
+    mutationFn: async (participantId: string) => {
+      const response = await api.post('/chat/conversations/', { participant_id: participantId });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      router.push(`/chat?conversation_id=${data.id}`);
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.detail || 'Failed to start conversation');
+    },
+  });
+
   if (profileLoading || interestsLoading) return <div className="p-8">Loading...</div>;
 
   const myId = myProfile?.id;
@@ -63,6 +79,10 @@ export default function InterestsPage() {
   const received = interests.filter(i => i.receiver === myId);
   const sent = interests.filter(i => i.sender === myId);
   const displayed = tab === 'received' ? received : sent;
+
+  const getOtherProfileId = (interest: Interest) => {
+    return interest.sender === myId ? interest.receiver : interest.sender;
+  };
 
   return (
     <AuthGuard>
@@ -104,6 +124,8 @@ export default function InterestsPage() {
                       {new Date(interest.created_at).toLocaleString()}
                     </p>
                   </div>
+
+                  {/* Show Accept/Decline only for received, sent status */}
                   {tab === 'received' && interest.status === 'sent' && (
                     <div className="flex gap-2">
                       <button
@@ -122,11 +144,24 @@ export default function InterestsPage() {
                       </button>
                     </div>
                   )}
+
+                  {/* Show Message button for accepted interests (both tabs) */}
+                  {interest.status === 'accepted' && (
+                    <button
+                      onClick={() => startConversationMutation.mutate(getOtherProfileId(interest))}
+                      disabled={startConversationMutation.isPending}
+                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                    >
+                      Message
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
           </ul>
         )}
+
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
     </AuthGuard>
   );

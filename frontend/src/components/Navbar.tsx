@@ -28,6 +28,7 @@ export default function Navbar() {
               <Link href="/profiles" className="hover:underline">Browse Profiles</Link>
               <Link href="/interests" className="hover:underline">Interests</Link>
               <Link href="/chat" className="hover:underline">Chat</Link>
+              <Link href="/profile/photos" className="hover:underline">My Photos</Link>
               <button onClick={handleLogout} className="bg-white text-teal-700 px-3 py-1 rounded hover:bg-gray-100">
                 Logout
               </button>
