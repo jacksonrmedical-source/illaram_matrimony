@@ -1,22 +1,29 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Interest
 from .serializers import InterestSerializer
+from .filters import InterestFilter
 from notifications.services import send_email_notification, send_sms_notification
 
 
 class InterestViewSet(viewsets.ModelViewSet):
     serializer_class = InterestSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = InterestFilter
+    ordering_fields = ['created_at', 'updated_at']
+    ordering = ['-created_at']  # newest first
 
     def get_queryset(self):
         user = self.request.user
         if hasattr(user, 'individual_profile'):
             profile = user.individual_profile
+            # Return interests where user is either sender or receiver
             return Interest.objects.filter(sender=profile) | Interest.objects.filter(receiver=profile)
         return Interest.objects.none()
 
@@ -58,7 +65,6 @@ class InterestViewSet(viewsets.ModelViewSet):
         interest.status = Interest.Status.ACCEPTED
         interest.save()
 
-        # Send notifications to sender
         sender_email = interest.sender.user.email
         if sender_email:
             send_email_notification(
