@@ -11,7 +11,6 @@ from .models import Interest
 class InterestsTests(APITestCase):
     def setUp(self):
         cache.clear()
-        # Create two users with individual profiles
         self.user1 = User.objects.create_user(phone='1111111111', password='testpass123', role='individual')
         self.profile1 = IndividualProfile.objects.create(
             user=self.user1,
@@ -41,8 +40,8 @@ class InterestsTests(APITestCase):
         self.assertEqual(Interest.objects.count(), 1)
 
     def test_daily_limit(self):
-        # Create 5 additional receivers
-        for i in range(5):
+        # Create 6 additional receivers
+        for i in range(6):
             user = User.objects.create_user(phone=f'999000000{i}', password='testpass123', role='individual')
             IndividualProfile.objects.create(
                 user=user,
@@ -52,7 +51,6 @@ class InterestsTests(APITestCase):
                 location_city='Chennai',
                 location_country='India',
             )
-        # Get receiver ids
         receivers = IndividualProfile.objects.exclude(id=self.profile1.id)[:6]
         url = reverse('interest-list')
         for i, receiver in enumerate(receivers):
@@ -63,10 +61,30 @@ class InterestsTests(APITestCase):
             else:
                 self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
+    def test_premium_unlimited_interests(self):
+        # Make user1 premium
+        self.user1.is_premium = True
+        self.user1.save()
+        # Create 6 receivers and send interests; all should succeed
+        for i in range(6):
+            user = User.objects.create_user(phone=f'888000000{i}', password='testpass123', role='individual')
+            IndividualProfile.objects.create(
+                user=user,
+                full_name=f'Premium Target {i}',
+                gender='female',
+                date_of_birth='1995-01-01',
+                location_city='Chennai',
+                location_country='India',
+            )
+        receivers = IndividualProfile.objects.exclude(id=self.profile1.id)[:6]
+        url = reverse('interest-list')
+        for receiver in receivers:
+            data = {'receiver': str(receiver.id)}
+            response = self.client.post(url, data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_accept_interest(self):
-        # Create interest from user1 to user2
         interest = Interest.objects.create(sender=self.profile1, receiver=self.profile2, status='sent')
-        # Switch to user2 and accept
         self.client.force_authenticate(user=self.user2)
         url = reverse('interest-accept', args=[interest.id])
         response = self.client.post(url)
