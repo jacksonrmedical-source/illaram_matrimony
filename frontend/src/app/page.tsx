@@ -3,17 +3,6 @@ import Link from 'next/link';
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <span className="text-xl font-bold text-teal-700">Illaram</span>
-          <div className="flex gap-4">
-            <Link href="/login" className="text-gray-600 hover:text-teal-700">Login</Link>
-            <Link href="/register" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Register</Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="max-w-4xl mx-auto text-center py-20 px-4">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">

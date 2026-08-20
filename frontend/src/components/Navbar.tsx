@@ -34,7 +34,10 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <Link href="/login" className="hover:underline">Login</Link>
+             <>
+             <Link href="/login" className="hover:underline">Login</Link>
+             <Link href="/register" className="hover:underline">Register</Link>
+            </>
           )}
         </div>
       </div>
