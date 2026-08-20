@@ -1,0 +1,21 @@
+{
+  "name": "Illaram Matrimony",
+  "short_name": "Illaram",
+  "description": "Modern Tamil Matrimony Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#0F4C4C",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
