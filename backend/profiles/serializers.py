@@ -7,14 +7,19 @@ from .models import IndividualProfile, ParentProfile, FamilyLink, Photo
 
 class IndividualProfileSerializer(serializers.ModelSerializer):
     completeness_score = serializers.SerializerMethodField()
+    is_selfie_verified = serializers.SerializerMethodField()
+    is_govt_id_verified = serializers.SerializerMethodField()
+    verification_badges = serializers.SerializerMethodField()
 
     class Meta:
         model = IndividualProfile
         fields = '__all__'
-        read_only_fields = ('user', 'created_at', 'updated_at', 'completeness_score')
+        read_only_fields = (
+            'user', 'created_at', 'updated_at', 'completeness_score',
+            'is_selfie_verified', 'is_govt_id_verified', 'verification_badges'
+        )
 
     def get_completeness_score(self, obj):
-        # List of field names to consider for completeness
         important_fields = [
             'full_name', 'gender', 'date_of_birth', 'height_cm', 'marital_status',
             'education', 'profession', 'income_range', 'location_city',
@@ -33,6 +38,24 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
                 filled += 1
 
         return int((filled / total) * 100)
+
+    def get_is_selfie_verified(self, obj):
+        return obj.user.verifications.filter(
+            verification_type='selfie', status='approved'
+        ).exists()
+
+    def get_is_govt_id_verified(self, obj):
+        return obj.user.verifications.filter(
+            verification_type='government_id', status='approved'
+        ).exists()
+
+    def get_verification_badges(self, obj):
+        badges = []
+        if self.get_is_selfie_verified(obj):
+            badges.append('selfie')
+        if self.get_is_govt_id_verified(obj):
+            badges.append('government_id')
+        return badges
 
 
 class ParentProfileSerializer(serializers.ModelSerializer):
@@ -61,20 +84,13 @@ class PhotoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         image = validated_data.get('image')
         if image:
-            # Open the uploaded image using Pillow
             img = Image.open(image)
-            # Apply blur filter
             blurred_img = img.filter(ImageFilter.GaussianBlur(radius=25))
-            # Convert to RGB (required for JPEG, especially if PNG with alpha)
             if blurred_img.mode in ('RGBA', 'LA', 'P'):
                 blurred_img = blurred_img.convert('RGB')
-            # Save blurred image to a bytes buffer
             buffer = io.BytesIO()
             blurred_img.save(buffer, format='JPEG')
             buffer.seek(0)
-
-            # Create a ContentFile and assign to blurred_image
             blurred_file = ContentFile(buffer.read(), name=f"blurred_{image.name}")
             validated_data['blurred_image'] = blurred_file
-
         return super().create(validated_data)
