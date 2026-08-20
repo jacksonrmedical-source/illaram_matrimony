@@ -155,3 +155,18 @@ class PhotoViewSet(viewsets.ModelViewSet):
             if photo.blurred_image:
                 return FileResponse(photo.blurred_image.open(), content_type='image/jpeg')
             return Response({"detail": "Blurred image not available"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def set_primary(self, request, pk=None):
+        photo = self.get_object()
+        # Ensure the photo belongs to the current user
+        if not hasattr(request.user, 'individual_profile') or photo.profile != request.user.individual_profile:
+            return Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Unset primary on all photos of the profile
+        Photo.objects.filter(profile=request.user.individual_profile).update(is_primary=False)
+        # Set this photo as primary
+        photo.is_primary = True
+        photo.save()
+
+        return Response(PhotoSerializer(photo).data)
