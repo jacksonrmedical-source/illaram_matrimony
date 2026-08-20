@@ -14,13 +14,20 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     participants = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    participants_details = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
-        fields = ['id', 'participants', 'last_message', 'unread_count', 'created_at', 'updated_at']
+        fields = ['id', 'participants', 'participants_details', 'last_message', 'unread_count', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_participants_details(self, obj):
+        return [
+            {'id': str(p.id), 'full_name': p.full_name}
+            for p in obj.participants.all()
+        ]
 
     def get_last_message(self, obj):
         last = obj.messages.order_by('-created_at').first()
