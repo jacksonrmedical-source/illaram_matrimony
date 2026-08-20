@@ -27,6 +27,13 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      role: 'individual',
+      phone: '',
+      email: '',
+      password: '',
+      confirm_password: '',
+    },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -37,7 +44,14 @@ export default function RegisterPage() {
       setTokens(access, refresh);
       router.push('/profiles/create');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed');
+      const errorData = err.response?.data;
+      if (errorData) {
+        // Extract first error message
+        const firstError = Object.values(errorData)[0];
+        setError(Array.isArray(firstError) ? firstError[0] : 'Registration failed');
+      } else {
+        setError('Registration failed');
+      }
     }
   };
 
@@ -54,6 +68,7 @@ export default function RegisterPage() {
           <option value="individual">Individual</option>
           <option value="parent">Parent</option>
         </select>
+        {errors.role && <p className="text-red-500 text-sm">{errors.role.message}</p>}
         <button type="submit" disabled={isSubmitting} className="w-full bg-teal-600 text-white py-2 rounded">
           {isSubmitting ? 'Registering...' : 'Register'}
         </button>

@@ -1,12 +1,17 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
 export default function Navbar() {
-  const { accessToken, logout } = useAuthStore();
+  const { accessToken, logout, hydrate } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   const handleLogout = () => {
     logout();
