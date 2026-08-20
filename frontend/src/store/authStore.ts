@@ -7,9 +7,18 @@ interface AuthState {
   logout: () => void;
 }
 
+const getInitialTokens = () => {
+  if (typeof window !== 'undefined') {
+    return {
+      accessToken: localStorage.getItem('access_token'),
+      refreshToken: localStorage.getItem('refresh_token'),
+    };
+  }
+  return { accessToken: null, refreshToken: null };
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  refreshToken: null,
+  ...getInitialTokens(),
   setTokens: (access, refresh) => {
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
