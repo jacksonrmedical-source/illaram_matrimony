@@ -35,17 +35,8 @@ export default function ProfilesPage() {
   };
 
   const clearFilters = () => {
-    setFilters({
-      location_city: '',
-      min_age: '',
-      max_age: '',
-      gender: '',
-      diet: '',
-    });
+    setFilters({ location_city: '', min_age: '', max_age: '', gender: '', diet: '' });
   };
-
-  if (isLoading) return <div className="p-8">Loading profiles...</div>;
-  if (error) return <div className="p-8 text-red-500">Failed to load profiles.</div>;
 
   return (
     <div className="p-8">
@@ -102,7 +93,7 @@ export default function ProfilesPage() {
             <option value="vegan">Vegan</option>
           </select>
         </div>
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3 text-right">
           <button
             onClick={clearFilters}
             className="text-sm text-teal-600 hover:underline"
@@ -112,26 +103,41 @@ export default function ProfilesPage() {
         </div>
       </div>
 
+      {/* Loading / Error */}
+      {isLoading && <p className="text-gray-500">Loading profiles...</p>}
+      {error && <p className="text-red-500">Failed to load profiles.</p>}
+
       {/* Profiles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data?.results?.map((profile) => (
-          <div key={profile.id} className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold">{profile.full_name}</h2>
-            <p className="text-sm text-gray-600">{profile.location_city}, {profile.location_country}</p>
-            <p className="text-sm">{profile.profession || profile.education}</p>
-            <p className="text-sm text-gray-500">Age: {new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear()}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {profile.verification_badges.map((badge) => (
-                <span key={badge} className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs">{badge}</span>
-              ))}
+      {!isLoading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data?.results?.map((profile) => (
+            <div key={profile.id} className="bg-white p-4 rounded shadow">
+              <h2 className="text-lg font-semibold">{profile.full_name}</h2>
+              <p className="text-sm text-gray-600">{profile.location_city}, {profile.location_country}</p>
+              <p className="text-sm">{profile.profession || profile.education}</p>
+              <p className="text-sm text-gray-500">
+                Age: {new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear()}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {profile.verification_badges.map((badge) => (
+                  <span key={badge} className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+              <Link
+                href={`/profiles/${profile.id}`}
+                className="mt-3 inline-block text-teal-600"
+              >
+                View Profile
+              </Link>
             </div>
-            <Link href={`/profiles/${profile.id}`} className="mt-3 inline-block text-teal-600">View Profile</Link>
-          </div>
-        ))}
-        {data?.results?.length === 0 && (
-          <p className="text-gray-500">No profiles match your filters.</p>
-        )}
-      </div>
+          ))}
+          {data?.results?.length === 0 && (
+            <p className="text-gray-500">No profiles match your filters.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
