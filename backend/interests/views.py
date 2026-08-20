@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, status, filters
+﻿from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.core.cache import cache
@@ -32,7 +32,7 @@ class InterestViewSet(viewsets.ModelViewSet):
         profile = user.individual_profile
 
         # Enforce daily limit for non-staff users
-        if not user.is_staff:
+        if not user.is_staff and not user.is_premium:
             limit = getattr(settings, 'DAILY_INTEREST_LIMIT', 5)
             today = timezone.now().date().isoformat()
             cache_key = f"interest_count:{user.id}:{today}"

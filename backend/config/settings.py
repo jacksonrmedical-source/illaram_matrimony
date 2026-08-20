@@ -1,12 +1,11 @@
-import os
+﻿import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-illaram-dev-key-please-change-in-production-1234567890abcdef')
@@ -40,6 +39,7 @@ INSTALLED_APPS = [
     'moderation',
     'notifications',
     'chat',
+    'payments',
 ]
 
 MIDDLEWARE = [

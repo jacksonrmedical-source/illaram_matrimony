@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/interests/', include('interests.urls')),
     path('api/moderation/', include('moderation.urls')),
     path('api/chat/', include('chat.urls')),
+    path('api/payments/', include('payments.urls')),
 ]
 
 if settings.DEBUG:
