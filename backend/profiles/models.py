@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from .validators import validate_image_file
 
 
 class IndividualProfile(models.Model):
@@ -116,7 +117,7 @@ class FamilyLink(models.Model):
 class Photo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     profile = models.ForeignKey(IndividualProfile, on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(upload_to='profile_photos/')
+    image = models.ImageField(upload_to='profile_photos/', validators=[validate_image_file])
     blurred_image = models.ImageField(upload_to='profile_photos/blurred/', blank=True, null=True)
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

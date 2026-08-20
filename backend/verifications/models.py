@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from .validators import validate_document_file, validate_selfie_image
 
 
 class Verification(models.Model):
@@ -21,8 +22,8 @@ class Verification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='verifications')
     verification_type = models.CharField(max_length=20, choices=VerificationType.choices)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    document = models.FileField(upload_to='verifications/', blank=True, null=True)
-    selfie_image = models.ImageField(upload_to='selfies/', blank=True, null=True)
+    document = models.FileField(upload_to='verifications/', blank=True, null=True, validators=[validate_document_file])
+    selfie_image = models.ImageField(upload_to='selfies/', blank=True, null=True, validators=[validate_selfie_image])
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
