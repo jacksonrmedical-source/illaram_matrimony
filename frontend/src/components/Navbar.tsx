@@ -29,14 +29,15 @@ export default function Navbar() {
               <Link href="/interests" className="hover:underline">Interests</Link>
               <Link href="/chat" className="hover:underline">Chat</Link>
               <Link href="/profile/photos" className="hover:underline">My Photos</Link>
+              <Link href="/profiles/edit" className="hover:underline">Edit Profile</Link>
               <button onClick={handleLogout} className="bg-white text-teal-700 px-3 py-1 rounded hover:bg-gray-100">
                 Logout
               </button>
             </>
           ) : (
-             <>
-             <Link href="/login" className="hover:underline">Login</Link>
-             <Link href="/register" className="hover:underline">Register</Link>
+            <>
+              <Link href="/login" className="hover:underline">Login</Link>
+              <Link href="/register" className="hover:underline">Register</Link>
             </>
           )}
         </div>
