@@ -85,10 +85,16 @@ class RegisterView(views.APIView):
         if role not in ['individual', 'parent']:
             return Response({"detail": "Invalid role."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Use serializer for validation
+        # Check if user already exists and has usable password
+        user = User.objects.filter(phone=phone).first()
+        if user and user.has_usable_password():
+            return Response({"detail": "Phone number already registered. Please login."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate using serializer (will not check uniqueness)
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # Create or update user
         user, created = User.objects.get_or_create(phone=phone)
         user.set_password(password)
         user.email = email if email else None

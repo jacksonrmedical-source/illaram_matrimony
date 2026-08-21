@@ -44,6 +44,24 @@ class RegistrationSecurityTests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response = self.client.post(self.verify_otp_url, {'phone': '1234567890', 'otp': '000000'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+	
+    def test_existing_user_cannot_register_again(self):
+        # Create an existing user with a password
+        User.objects.create_user(phone='9999999999', password='oldpassword123', role='individual')
+        # Simulate OTP verification
+        cache.set('otp_verified:9999999999', True, timeout=600)
+        # Attempt to register with new password
+        response = self.client.post(self.register_url, {
+            'phone': '9999999999',
+            'password': 'newpassword123',
+            'confirm_password': 'newpassword123',
+            'role': 'individual'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('already registered', str(response.data))
+        # Verify password unchanged
+        user = User.objects.get(phone='9999999999')
+        self.assertTrue(user.check_password('oldpassword123'))
 
 
 class PremiumExpiryTests(APITestCase):

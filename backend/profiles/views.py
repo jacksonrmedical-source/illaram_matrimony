@@ -25,14 +25,34 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
     ordering = ['-last_active']
 
     def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'individual_profile'):
+            return IndividualProfile.objects.none()
+        profile = user.individual_profile
+
         qs = IndividualProfile.objects.all()
-        if hasattr(self.request.user, 'individual_profile'):
-            qs = exclude_blocked_profiles(qs, self.request.user.individual_profile)
+
+        # Exclude blocked users
+        qs = exclude_blocked_profiles(qs, profile)
+
+        # Opposite-gender default
+        gender_map = {'male': 'female', 'female': 'male'}
+        my_gender = profile.gender
+        if my_gender not in gender_map:
+            return IndividualProfile.objects.none()
+        allowed_gender = gender_map[my_gender]
+
+        # Apply gender filter
+        qs = qs.filter(gender=allowed_gender)
+
+        # Explicit gender query param can only narrow further, not widen
+        explicit_gender = self.request.query_params.get('gender')
+        if explicit_gender:
+            if explicit_gender not in [allowed_gender]:
+                return IndividualProfile.objects.none()
+            qs = qs.filter(gender=explicit_gender)
+
         return qs
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
     @action(detail=False, methods=['get'])
     def me(self, request):
         """Return the current user's individual profile."""

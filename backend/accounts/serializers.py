@@ -18,6 +18,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('phone', 'password', 'confirm_password', 'email', 'role')
+        extra_kwargs = {
+            'phone': {'validators': []}  # remove unique validator; handled in view
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['confirm_password']:

@@ -70,3 +70,33 @@ class LastActiveDebounceTests(APITestCase):
         self.client.get(self.url)
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.last_active, recent_time)
+
+class GenderDiscoveryTests(APITestCase):
+    def setUp(self):
+        self.male_user = User.objects.create_user(phone='5555555555', password='testpass123', role='individual')
+        self.female_user = User.objects.create_user(phone='6666666666', password='testpass123', role='individual')
+        self.male_profile = IndividualProfile.objects.create(user=self.male_user, full_name='Male User', gender='male', date_of_birth='1995-01-01', location_city='Chennai', location_country='India')
+        self.female_profile = IndividualProfile.objects.create(user=self.female_user, full_name='Female User', gender='female', date_of_birth='1995-01-01', location_city='Chennai', location_country='India')
+
+    def test_male_sees_only_females(self):
+        self.client.force_authenticate(user=self.male_user)
+        url = reverse('individualprofile-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data['results']
+        self.assertTrue(all(p['gender'] == 'female' for p in results))
+
+    def test_female_sees_only_males(self):
+        self.client.force_authenticate(user=self.female_user)
+        url = reverse('individualprofile-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data['results']
+        self.assertTrue(all(p['gender'] == 'male' for p in results))
+
+    def test_explicit_wrong_gender_returns_none(self):
+        self.client.force_authenticate(user=self.male_user)
+        url = reverse('individualprofile-list') + '?gender=male'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
