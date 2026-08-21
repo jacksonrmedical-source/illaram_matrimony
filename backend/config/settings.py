@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'moderation',
     'notifications',
     'chat',
+    'matches',
     'payments',
 ]
 

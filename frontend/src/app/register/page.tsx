@@ -1,136 +1,77 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import AuthGuard from '@/components/AuthGuard';
-import { IndividualProfile } from '@/types';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-interface Interest {
-  id: string;
-  sender: string;
-  receiver: string;
-  status: string;
-  photo_request: boolean;
-  created_at: string;
-  sender_name?: string;
-  receiver_name?: string;
-}
+const schema = z.object({
+  phone: z.string().min(10),
+  password: z.string().min(8),
+  confirm_password: z.string().min(8),
+  email: z.string().email().optional(),
+  role: z.enum(['individual', 'parent']).default('individual'),
+}).refine(data => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ['confirm_password'],
+});
 
-export default function InterestsPage() {
-  const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'received' | 'sent'>('received');
+type FormData = z.infer<typeof schema>;
 
-  // Get current user's profile
-  const { data: myProfile, isLoading: profileLoading } = useQuery<IndividualProfile>({
-    queryKey: ['myProfile'],
-    queryFn: async () => {
-      const response = await api.get('/profiles/individual-profiles/me/');
-      return response.data;
+export default function RegisterPage() {
+  const router = useRouter();
+  const setTokens = useAuthStore((state) => state.setTokens);
+  const [error, setError] = useState('');
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      role: 'individual',
+      phone: '',
+      email: '',
+      password: '',
+      confirm_password: '',
     },
   });
 
-  // Get interests list
-  const { data: interestsData, isLoading: interestsLoading } = useQuery<{ results: Interest[] }>({
-    queryKey: ['interests'],
-    queryFn: async () => {
-      const response = await api.get('/interests/interests/');
-      return response.data;
-    },
-  });
-
-  const acceptMutation = useMutation({
-    mutationFn: async (interestId: string) => {
-      await api.post(`/interests/interests/${interestId}/accept/`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interests'] });
-    },
-  });
-
-  const declineMutation = useMutation({
-    mutationFn: async (interestId: string) => {
-      await api.post(`/interests/interests/${interestId}/decline/`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interests'] });
-    },
-  });
-
-  if (profileLoading || interestsLoading) return <div className="p-8">Loading...</div>;
-
-  const myId = myProfile?.id;
-  const interests = interestsData?.results || [];
-
-  const received = interests.filter(i => i.receiver === myId);
-  const sent = interests.filter(i => i.sender === myId);
-
-  const displayed = tab === 'received' ? received : sent;
+  const onSubmit = async (data: FormData) => {
+    setError('');
+    try {
+      const response = await api.post('/accounts/auth/register/', data);
+      const { access, refresh } = response.data;
+      setTokens(access, refresh);
+      router.push('/profiles/create');
+    } catch (err: any) {
+      const errorData = err.response?.data;
+      if (errorData) {
+        const firstError = Object.values(errorData)[0];
+        setError(Array.isArray(firstError) ? firstError[0] : 'Registration failed');
+      } else {
+        setError('Registration failed');
+      }
+    }
+  };
 
   return (
-    <AuthGuard>
-      <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Interests</h1>
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setTab('received')}
-            className={`px-4 py-2 rounded ${tab === 'received' ? 'bg-primary text-white' : 'bg-primary-soft/50'}`}
-          >
-            Received ({received.length})
-          </button>
-          <button
-            onClick={() => setTab('sent')}
-            className={`px-4 py-2 rounded ${tab === 'sent' ? 'bg-primary text-white' : 'bg-primary-soft/50'}`}
-          >
-            Sent ({sent.length})
-          </button>
-        </div>
-
-        {displayed.length === 0 ? (
-          <p className="text-muted">No interests yet.</p>
-        ) : (
-          <ul className="space-y-4">
-            {displayed.map((interest) => (
-              <li key={interest.id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">
-                      {tab === 'received'
-                        ? interest.sender_name || interest.sender
-                        : interest.receiver_name || interest.receiver}
-                    </p>
-                    <p className="text-sm text-muted">
-                      Status: {interest.status}
-                      {interest.photo_request && ' Â· Photo requested'}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {new Date(interest.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  {tab === 'received' && interest.status === 'sent' && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => acceptMutation.mutate(interest.id)}
-                        disabled={acceptMutation.isPending}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => declineMutation.mutate(interest.id)}
-                        disabled={declineMutation.isPending}
-                        className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </AuthGuard>
+    <div className="min-h-screen flex items-center justify-center bg-cream">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded-2xl shadow-card w-full max-w-md space-y-4">
+        <h1 className="text-2xl font-bold text-center text-ink">Register</h1>
+        <input {...register('phone')} placeholder="Phone" className="w-full p-3 border border-gray-200 rounded-xl" />
+        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+        <input {...register('email')} placeholder="Email (optional)" className="w-full p-3 border border-gray-200 rounded-xl" />
+        <input {...register('password')} type="password" placeholder="Password" className="w-full p-3 border border-gray-200 rounded-xl" />
+        <input {...register('confirm_password')} type="password" placeholder="Confirm Password" className="w-full p-3 border border-gray-200 rounded-xl" />
+        <select {...register('role')} className="w-full p-3 border border-gray-200 rounded-xl">
+          <option value="individual">Individual</option>
+          <option value="parent">Parent</option>
+        </select>
+        <button type="submit" disabled={isSubmitting} className="w-full bg-peach text-white py-3 rounded-xl">
+          {isSubmitting ? 'Registering...' : 'Register'}
+        </button>
+        {error && <p className="text-red-500">{error}</p>}
+      </form>
+    </div>
   );
 }

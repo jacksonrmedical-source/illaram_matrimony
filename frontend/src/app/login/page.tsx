@@ -32,24 +32,27 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await api.post('/accounts/auth/verify-otp/', { phone, otp });
-      const { access, refresh, is_new_user } = response.data;
+      const { access, refresh } = response.data;
       setTokens(access, refresh);
-      if (is_new_user) {
-        router.push('/register');
-      } else {
+
+      // Check if user has a profile
+      try {
+        await api.get('/profiles/individual-profiles/me/');
         router.push('/profiles');
+      } catch (profileErr) {
+        router.push('/profiles/create');
       }
     } catch (err) {
-      setError('Invalid OTP. Please try again.');
+      setError('Invalid OTP or verification failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login to Illaram</h1>
+    <div className="min-h-screen flex items-center justify-center bg-cream">
+      <div className="bg-white p-8 rounded-2xl shadow-card w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center text-ink">Login to Illaram</h1>
         {step === 'phone' ? (
           <div className="space-y-4">
             <input
@@ -57,12 +60,12 @@ export default function LoginPage() {
               placeholder="Phone number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border border-gray-200 rounded-xl"
             />
             <button
               onClick={requestOtp}
               disabled={loading || !phone}
-              className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
+              className="w-full bg-peach text-white py-3 rounded-xl disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Request OTP'}
             </button>
@@ -74,12 +77,12 @@ export default function LoginPage() {
               placeholder="Enter OTP"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border border-gray-200 rounded-xl"
             />
             <button
               onClick={verifyOtp}
               disabled={loading || !otp}
-              className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
+              className="w-full bg-peach text-white py-3 rounded-xl disabled:opacity-50"
             >
               {loading ? 'Verifying...' : 'Verify OTP'}
             </button>

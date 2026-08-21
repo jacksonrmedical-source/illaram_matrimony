@@ -74,6 +74,23 @@ class IndividualProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     last_active = models.DateTimeField(auto_now=True)
 
+    onboarding_completed = models.BooleanField(default=False)
+
+    preferred_age_min = models.PositiveSmallIntegerField(null=True, blank=True)
+    preferred_age_max = models.PositiveSmallIntegerField(null=True, blank=True)
+    preferred_location = models.CharField(max_length=100, blank=True, null=True)
+    preferred_education = models.CharField(max_length=100, blank=True, null=True)
+    preferred_profession = models.CharField(max_length=100, blank=True, null=True)
+
+    photo_visibility = models.CharField(max_length=20, choices=[
+        ('private', 'Private until mutual interest'),
+        ('public', 'Public'),
+    ], default='private')
+    who_can_message = models.CharField(max_length=20, choices=[
+        ('all', 'All users'),
+        ('matches', 'Only matches'),
+    ], default='matches')
+
 
     def __str__(self):
         return f"{self.full_name} ({self.user.phone})"

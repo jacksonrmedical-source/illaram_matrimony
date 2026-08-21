@@ -24,41 +24,36 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
     ordering = ['-last_active']
 
     def get_queryset(self):
-        if self.request.user.is_staff:
-            return IndividualProfile.objects.all()
         return IndividualProfile.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        """Return the current user's individual profile."""
+        if not hasattr(request.user, 'individual_profile'):
+            return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(request.user.individual_profile)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def request_photo(self, request, pk=None):
-        """Send an interest with photo_request=True to the target profile."""
         profile = self.get_object()
         user = request.user
-
         if not hasattr(user, 'individual_profile'):
-            return Response({"detail": "You must have an individual profile to request photos."}, status=status.HTTP_403_FORBIDDEN)
-
+            return Response({"detail": "You must have an individual profile to request photos."}, status=403)
         if profile == user.individual_profile:
-            return Response({"detail": "You cannot request photos from yourself."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"detail": "You cannot request photos from yourself."}, status=400)
         from interests.models import Interest
         from interests.serializers import InterestSerializer
-
         existing = Interest.objects.filter(sender=user.individual_profile, receiver=profile).first()
         if existing:
             existing.photo_request = True
             existing.save()
-            return Response(InterestSerializer(existing).data, status=status.HTTP_200_OK)
-
-        interest = Interest.objects.create(
-            sender=user.individual_profile,
-            receiver=profile,
-            status=Interest.Status.SENT,
-            photo_request=True
-        )
-        return Response(InterestSerializer(interest).data, status=status.HTTP_201_CREATED)
+            return Response(InterestSerializer(existing).data)
+        interest = Interest.objects.create(sender=user.individual_profile, receiver=profile, status='sent', photo_request=True)
+        return Response(InterestSerializer(interest).data, status=201)
 
 
 class ParentProfileViewSet(viewsets.ModelViewSet):
@@ -100,7 +95,7 @@ class FamilyLinkViewSet(viewsets.ModelViewSet):
             link.status = 'approved'
             link.save()
             return Response(FamilyLinkSerializer(link).data)
-        return Response({"detail": "You do not have permission to approve this request."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Not allowed"}, status=403)
 
     @action(detail=True, methods=['post'])
     def revoke(self, request, pk=None):
@@ -110,7 +105,7 @@ class FamilyLinkViewSet(viewsets.ModelViewSet):
             link.status = 'revoked'
             link.save()
             return Response(FamilyLinkSerializer(link).data)
-        return Response({"detail": "You do not have permission to revoke this request."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Not allowed"}, status=403)
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
@@ -134,39 +129,25 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def view(self, request, pk=None):
         photo = get_object_or_404(Photo, pk=pk)
         user = request.user
-
-        # Owner sees original
         if hasattr(user, 'individual_profile') and photo.profile == user.individual_profile:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
-
-        # Check mutual interest
         from interests.models import Interest
         mutual = False
         if hasattr(user, 'individual_profile'):
-            mutual = Interest.objects.filter(
-                sender=user.individual_profile, receiver=photo.profile, status='accepted'
-            ).exists() or Interest.objects.filter(
-                sender=photo.profile, receiver=user.individual_profile, status='accepted'
-            ).exists()
-
+            mutual = Interest.objects.filter(sender=user.individual_profile, receiver=photo.profile, status='accepted').exists() or \
+                     Interest.objects.filter(sender=photo.profile, receiver=user.individual_profile, status='accepted').exists()
         if mutual:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
-        else:
-            if photo.blurred_image:
-                return FileResponse(photo.blurred_image.open(), content_type='image/jpeg')
-            return Response({"detail": "Blurred image not available"}, status=status.HTTP_404_NOT_FOUND)
+        if photo.blurred_image:
+            return FileResponse(photo.blurred_image.open(), content_type='image/jpeg')
+        return Response({"detail": "Blurred image not available"}, status=404)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def set_primary(self, request, pk=None):
         photo = self.get_object()
-        # Ensure the photo belongs to the current user
         if not hasattr(request.user, 'individual_profile') or photo.profile != request.user.individual_profile:
-            return Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
-
-        # Unset primary on all photos of the profile
+            return Response({"detail": "Not allowed"}, status=403)
         Photo.objects.filter(profile=request.user.individual_profile).update(is_primary=False)
-        # Set this photo as primary
         photo.is_primary = True
         photo.save()
-
         return Response(PhotoSerializer(photo).data)
