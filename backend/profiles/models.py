@@ -44,6 +44,18 @@ class IndividualProfile(models.Model):
         ('not', 'Not Important'),
     ], default='somewhat')
     festivals = models.JSONField(default=list, blank=True)  # e.g. ["Pongal", "Deepavali"]
+    religion = models.CharField(max_length=50, blank=True, null=True)
+    mother_tongue = models.CharField(max_length=50, blank=True, null=True)
+    denomination = models.CharField(max_length=50, blank=True, null=True)
+    show_community_details = models.BooleanField(default=True)
+    locked_fields = models.JSONField(default=list, blank=True)
+    review_status = models.CharField(max_length=20, choices=[
+        ('draft', 'Draft'),
+        ('pending_review', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ], default='draft')
+    review_notes = models.TextField(blank=True)
     spiritual_orientation = models.CharField(max_length=50, choices=[
         ('temple_going', 'Temple-going'),
         ('spiritual_not_religious', 'Spiritual but not religious'),

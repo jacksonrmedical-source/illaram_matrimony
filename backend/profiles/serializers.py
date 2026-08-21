@@ -73,6 +73,12 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'date_of_birth': 'Female profiles must be at least 18 years old.'})
             elif gender == 'other' and age < 18:
                 raise serializers.ValidationError({'date_of_birth': 'Profiles must be at least 18 years old.'})
+
+        # Mandatory primary fields for onboarding completion
+        mandatory_primary = ['full_name', 'gender', 'date_of_birth', 'religion', 'mother_tongue', 'location_city']
+        for field in mandatory_primary:
+            if not attrs.get(field, getattr(self.instance, field, None)):
+                raise serializers.ValidationError({field: f'{field} is mandatory before profile can be submitted.'})
         return attrs
 
 
