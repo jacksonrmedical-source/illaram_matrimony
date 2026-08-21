@@ -11,6 +11,7 @@ from .models import IndividualProfile, ParentProfile, FamilyLink, Photo
 from .serializers import IndividualProfileSerializer, ParentProfileSerializer, FamilyLinkSerializer, PhotoSerializer
 from .permissions import IsOwnerOrReadOnly
 from .filters import IndividualProfileFilter
+from .utils import exclude_blocked_profiles
 
 
 class IndividualProfileViewSet(viewsets.ModelViewSet):
@@ -24,7 +25,10 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
     ordering = ['-last_active']
 
     def get_queryset(self):
-        return IndividualProfile.objects.all()
+        qs = IndividualProfile.objects.all()
+        if hasattr(self.request.user, 'individual_profile'):
+            qs = exclude_blocked_profiles(qs, self.request.user.individual_profile)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

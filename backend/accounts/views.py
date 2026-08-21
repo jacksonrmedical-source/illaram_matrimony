@@ -1,5 +1,4 @@
-import random
-import string
+import secrets
 from django.core.cache import cache
 from rest_framework import status, views, permissions
 from rest_framework.response import Response
@@ -9,7 +8,7 @@ from .serializers import PhoneSerializer, OTPSerializer, RegistrationSerializer
 
 
 def generate_otp():
-    return ''.join(random.choices(string.digits, k=6))
+    return ''.join(secrets.choice('0123456789') for _ in range(6))
 
 
 class RequestOTPView(views.APIView):
@@ -21,9 +20,14 @@ class RequestOTPView(views.APIView):
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data['phone']
 
+        # Check if already locked out
+        lock_key = f'otp_lock:{phone}'
+        if cache.get(lock_key):
+            return Response({"detail": "Too many OTP attempts. Try again later."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         otp = generate_otp()
-        cache.set(f'otp:{phone}', otp, timeout=300)
-        print(f"OTP for {phone}: {otp}")
+        cache.set(f'otp:{phone}', otp, timeout=300)  # 5 minutes
+        print(f"OTP for {phone}: {otp}")  # dev only
 
         return Response({"detail": "OTP sent successfully"}, status=status.HTTP_200_OK)
 
@@ -37,9 +41,14 @@ class VerifyOTPView(views.APIView):
         phone = serializer.validated_data['phone']
         otp = serializer.validated_data['otp']
 
+        lock_key = f'otp_lock:{phone}'
+        if cache.get(lock_key):
+            return Response({"detail": "Too many OTP attempts. Try again later."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         cached_otp = cache.get(f'otp:{phone}')
         if cached_otp and cached_otp == otp:
             cache.delete(f'otp:{phone}')
+            cache.set(f'otp_verified:{phone}', True, timeout=600)  # 10 minutes to complete registration
             user, created = User.objects.get_or_create(phone=phone)
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -48,6 +57,13 @@ class VerifyOTPView(views.APIView):
                 'user_id': str(user.id),
                 'is_new_user': created,
             }, status=status.HTTP_200_OK)
+
+        # Increment failed attempts
+        attempts_key = f'otp_attempts:{phone}'
+        attempts = cache.get(attempts_key, 0) + 1
+        cache.set(attempts_key, attempts, timeout=300)
+        if attempts >= 5:
+            cache.set(lock_key, True, timeout=600)  # 10 min lock
         return Response({"detail": "Invalid or expired OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -61,25 +77,26 @@ class RegisterView(views.APIView):
         email = request.data.get('email', '')
         role = request.data.get('role', 'individual')
 
-        # Basic validation
-        if not phone or not password or not confirm_password:
-            return Response({"detail": "phone, password, confirm_password are required."}, status=status.HTTP_400_BAD_REQUEST)
-        if password != confirm_password:
-            return Response({"detail": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
-        if len(password) < 8:
-            return Response({"detail": "Password must be at least 8 characters."}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate OTP verified
+        if not cache.get(f'otp_verified:{phone}'):
+            return Response({"detail": "Phone number not verified. Please verify OTP first."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if user already exists (created during OTP verification)
+        # Role restriction
+        if role not in ['individual', 'parent']:
+            return Response({"detail": "Invalid role."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Use serializer for validation
+        serializer = RegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         user, created = User.objects.get_or_create(phone=phone)
-
-        # Update user fields
         user.set_password(password)
         user.email = email if email else None
-        if role in ['individual', 'parent', 'admin']:
-            user.role = role
-        else:
-            user.role = 'individual'
+        user.role = role
         user.save()
+
+        # Consume OTP verified flag
+        cache.delete(f'otp_verified:{phone}')
 
         refresh = RefreshToken.for_user(user)
         return Response({

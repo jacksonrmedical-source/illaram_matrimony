@@ -1,5 +1,5 @@
-# profiles/middleware.py
 from django.utils import timezone
+from datetime import timedelta
 from profiles.models import IndividualProfile
 
 class UpdateLastActiveMiddleware:
@@ -9,7 +9,7 @@ class UpdateLastActiveMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         if request.user.is_authenticated:
-            IndividualProfile.objects.filter(user=request.user).update(
-                last_active=timezone.now()
-            )
+            last_active = IndividualProfile.objects.filter(user=request.user).values_list('last_active', flat=True).first()
+            if last_active is None or timezone.now() - last_active > timedelta(minutes=5):
+                IndividualProfile.objects.filter(user=request.user).update(last_active=timezone.now())
         return response

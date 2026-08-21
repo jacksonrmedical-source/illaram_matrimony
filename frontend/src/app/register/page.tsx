@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,9 +23,10 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const setTokens = useAuthStore((state) => state.setTokens);
   const [error, setError] = useState('');
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       role: 'individual',
@@ -36,18 +37,29 @@ export default function RegisterPage() {
     },
   });
 
+  useEffect(() => {
+    const phoneParam = searchParams.get('phone');
+    if (phoneParam) {
+      setValue('phone', phoneParam);
+    }
+  }, [searchParams, setValue]);
+
   const onSubmit = async (data: FormData) => {
     setError('');
     try {
       const response = await api.post('/accounts/auth/register/', data);
       const { access, refresh } = response.data;
       setTokens(access, refresh);
-      router.push('/profiles/create');
+      router.push('/profiles/create');   // or /onboarding? We'll use /onboarding since we have gateway.
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData) {
-        const firstError = Object.values(errorData)[0];
-        setError(Array.isArray(firstError) ? firstError[0] : 'Registration failed');
+        if (errorData.detail) {
+          setError(errorData.detail);
+        } else {
+          const firstError = Object.values(errorData)[0];
+          setError(Array.isArray(firstError) ? firstError[0] : 'Registration failed');
+        }
       } else {
         setError('Registration failed');
       }
@@ -67,7 +79,7 @@ export default function RegisterPage() {
           <option value="individual">Individual</option>
           <option value="parent">Parent</option>
         </select>
-        <button type="submit" disabled={isSubmitting} className="w-full bg-peach text-white py-3 rounded-xl">
+        <button type="submit" disabled={isSubmitting} className="w-full bg-peach text-white py-3 rounded-xl disabled:opacity-50">
           {isSubmitting ? 'Registering...' : 'Register'}
         </button>
         {error && <p className="text-red-500">{error}</p>}

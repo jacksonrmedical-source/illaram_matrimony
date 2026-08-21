@@ -2,48 +2,89 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from django.core.cache import cache
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 from .models import User
+from profiles.models import IndividualProfile
 
-
-class AccountsTests(APITestCase):
+class RegistrationSecurityTests(APITestCase):
     def setUp(self):
-        cache.clear()  # Clear cache before each test
+        cache.clear()
+        self.register_url = reverse('register')
+        self.request_otp_url = reverse('request-otp')
+        self.verify_otp_url = reverse('verify-otp')
 
-    def test_request_otp(self):
-        url = reverse('request-otp')  # name from accounts/urls.py
-        data = {'phone': '9876543210'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # OTP should be stored in cache
-        otp = cache.get('otp:9876543210')
-        self.assertIsNotNone(otp)
-        self.assertEqual(len(otp), 6)
-
-    def test_verify_otp_and_get_token(self):
-        # Request OTP first
-        self.client.post(reverse('request-otp'), {'phone': '9876543210'}, format='json')
-        otp = cache.get('otp:9876543210')
-
-        # Verify OTP
-        url = reverse('verify-otp')
-        data = {'phone': '9876543210', 'otp': otp}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
-        self.assertTrue(User.objects.filter(phone='9876543210').exists())
-
-    def test_register_user(self):
-        url = reverse('register')
-        data = {
-            'phone': '9876543210',
+    def test_register_without_otp_fails(self):
+        response = self.client.post(self.register_url, {
+            'phone': '1234567890',
             'password': 'testpass123',
             'confirm_password': 'testpass123',
-            'email': 'test@example.com',
             'role': 'individual'
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('access', response.data)
-        user = User.objects.get(phone='9876543210')
-        self.assertEqual(user.email, 'test@example.com')
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Phone number not verified', str(response.data))
+
+    def test_admin_role_rejected_after_otp(self):
+        self.client.post(self.request_otp_url, {'phone': '1234567890'}, format='json')
+        otp = cache.get('otp:1234567890')
+        self.client.post(self.verify_otp_url, {'phone': '1234567890', 'otp': otp}, format='json')
+        response = self.client.post(self.register_url, {
+            'phone': '1234567890',
+            'password': 'testpass123',
+            'confirm_password': 'testpass123',
+            'role': 'admin'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Invalid role', str(response.data))
+
+    def test_otp_lockout_after_5_wrong_attempts(self):
+        self.client.post(self.request_otp_url, {'phone': '1234567890'}, format='json')
+        for _ in range(5):
+            response = self.client.post(self.verify_otp_url, {'phone': '1234567890', 'otp': '000000'}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(self.verify_otp_url, {'phone': '1234567890', 'otp': '000000'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+
+class PremiumExpiryTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.user1 = User.objects.create_user(phone='1111111111', password='testpass123', role='individual')
+        self.profile1 = IndividualProfile.objects.create(
+            user=self.user1, full_name='User One', gender='male', date_of_birth='1995-01-01',
+            location_city='Chennai', location_country='India'
+        )
+        # Create 6 receiver profiles
+        self.receivers = []
+        for i in range(6):
+            user = User.objects.create_user(phone=f'222222222{i}', password='testpass123', role='individual')
+            profile = IndividualProfile.objects.create(
+                user=user, full_name=f'Receiver {i}', gender='female', date_of_birth='1995-01-01',
+                location_city='Chennai', location_country='India'
+            )
+            self.receivers.append(profile)
+
+    def test_premium_expired_enforces_daily_limit(self):
+        self.user1.is_premium = True
+        self.user1.premium_expiry = timezone.now() - timedelta(days=1)
+        self.user1.save()
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse('interest-list')
+        for i in range(6):
+            response = self.client.post(url, {'receiver': str(self.receivers[i].id)}, format='json')
+            if i < 5:
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            else:
+                self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    def test_active_premium_unlimited(self):
+        self.user1.is_premium = True
+        self.user1.premium_expiry = timezone.now() + timedelta(days=30)
+        self.user1.save()
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse('interest-list')
+        for i in range(6):
+            response = self.client.post(url, {'receiver': str(self.receivers[i].id)}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)

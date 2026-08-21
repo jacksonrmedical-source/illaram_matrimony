@@ -7,6 +7,7 @@ from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from profiles.models import IndividualProfile
 from interests.models import Interest
+from moderation.models import Block
 
 
 class ConversationViewSet(viewsets.ModelViewSet):

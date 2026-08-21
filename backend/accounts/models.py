@@ -39,6 +39,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_premium = models.BooleanField(default=False)
     premium_expiry = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def has_active_premium(self):
+        from django.utils import timezone
+        return self.is_premium and self.premium_expiry and self.premium_expiry > timezone.now()
+
     objects = UserManager()
 
     USERNAME_FIELD = 'phone'

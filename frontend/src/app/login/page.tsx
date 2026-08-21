@@ -32,15 +32,15 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await api.post('/accounts/auth/verify-otp/', { phone, otp });
-      const { access, refresh } = response.data;
+      const { access, refresh, is_new_user } = response.data;
       setTokens(access, refresh);
 
-      // Check if user has a profile
-      try {
-        await api.get('/profiles/individual-profiles/me/');
+      if (is_new_user) {
+        // New user must complete registration
+        router.push(`/register?phone=${encodeURIComponent(phone)}`);
+      } else {
+        // Existing user can go to profiles
         router.push('/profiles');
-      } catch (profileErr) {
-        router.push('/profiles/create');
       }
     } catch (err) {
       setError('Invalid OTP or verification failed. Please try again.');
