@@ -5,7 +5,8 @@ export default function HomePage() {
     <div className="bg-surface min-h-screen">
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-white">
-        <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
+        {/* Subtle kolam pattern background */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
           <svg width="100%" height="100%">
             <defs>
               <pattern id="kolam" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
@@ -17,37 +18,40 @@ export default function HomePage() {
           </svg>
         </div>
 
-        <div className="h-1.5 w-full bg-gradient-to-r from-accent via-primary to-accent" />
-
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative">
+        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative">
+          {/* Left */}
           <div className="space-y-8">
-            <span className="inline-block text-sm font-medium text-accent bg-accent/10 px-4 py-1.5 rounded-full">
-              வணக்கம் · Vanakkam · A modern Tamil matrimony experience
-            </span>
             <h1 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight text-charcoal">
               Find a partner, <br />
               <span className="text-primary">not just a profile.</span>
             </h1>
             <p className="text-lg md:text-xl text-muted max-w-lg">
-              A modern matrimony experience for Tamil families worldwide — built around compatibility, trust, and meaningful connections.
+              A modern Tamil matrimony experience built around compatibility, trust, and meaningful connections.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/register" className="bg-primary text-white px-8 py-4 rounded-full font-medium hover:bg-primary-dark transition shadow-card hover:shadow-card-hover">
-                Find Your Match — Free
+              <Link
+                href="/register"
+                className="bg-primary text-white px-8 py-4 rounded-full font-medium hover:bg-primary-dark transition shadow-card hover:shadow-card-hover"
+              >
+                Find Your Match
               </Link>
-              <Link href="#how-it-works" className="bg-white text-primary border border-primary/20 px-8 py-4 rounded-full font-medium hover:bg-primary-soft transition">
+              <Link
+                href="#how-it-works"
+                className="bg-white text-primary border border-primary/20 px-8 py-4 rounded-full font-medium hover:bg-primary-soft transition"
+              >
                 How Illaram Works
               </Link>
             </div>
-            <div className="pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted">
-              <span className="flex items-center gap-2"><span className="w-2 h-2 bg-green-500 rounded-full"></span>Government ID & selfie verified</span>
-              <span className="flex items-center gap-2">🔒 Privacy-first photos</span>
-              <span className="flex items-center gap-2">🪔 Traditional filters (Rasi, Nakshatram)</span>
+            <div className="pt-4 flex items-center gap-2 text-sm text-muted">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+              Verified profiles · Privacy‑first · Family friendly
             </div>
           </div>
 
+          {/* Right visual composition */}
           <div className="relative">
-            <div className="bg-gradient-to-br from-primary-soft to-accent/10 rounded-3xl p-8 shadow-card relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-soft to-primary/10 rounded-3xl p-8 shadow-card relative overflow-hidden">
+              {/* Mock profile card */}
               <div className="bg-white rounded-2xl p-6 shadow-card max-w-xs mx-auto">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center text-2xl">
@@ -56,7 +60,9 @@ export default function HomePage() {
                   <div>
                     <h3 className="font-bold text-charcoal">Ananya, 28</h3>
                     <p className="text-sm text-muted">Chennai · Software Engineer</p>
-                    <span className="text-xs bg-primary-soft text-primary px-2 py-0.5 rounded-full inline-block mt-1">✓ ID Verified</span>
+                    <span className="text-xs bg-primary-soft text-primary px-2 py-0.5 rounded-full inline-block mt-1">
+                      ✓ Verified
+                    </span>
                   </div>
                 </div>
                 <div className="mt-4 space-y-2 text-sm">
@@ -68,12 +74,8 @@ export default function HomePage() {
                     <div className="bg-primary h-1.5 rounded-full" style={{ width: '82%' }}></div>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted">Star / Rasi</span>
-                    <span className="font-medium">Available</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted">Mother tongue</span>
-                    <span className="font-medium">Tamil</span>
+                    <span className="text-muted">Tamil language</span>
+                    <span className="font-medium">Very important</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted">Family involvement</span>
@@ -81,6 +83,7 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
+              {/* Floating verification / privacy chips */}
               <div className="absolute -top-3 -right-3 bg-white rounded-xl shadow-card px-3 py-2 flex items-center gap-2">
                 🔒 <span className="text-xs font-medium">Private photo</span>
               </div>
@@ -92,44 +95,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PROFILE GLIMPSE STRIP */}
-      <section className="bg-white border-y border-gray-100 py-10 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-charcoal">A glimpse of profiles</h2>
-            <Link href="/profiles" className="text-primary text-sm font-medium">View all →</Link>
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {[
-              { name: 'Priya', age: 26, loc: 'Coimbatore', emoji: '👩🏽' },
-              { name: 'Karthik', age: 30, loc: 'Chennai', emoji: '👨🏽' },
-              { name: 'Divya', age: 27, loc: 'Madurai', emoji: '👩🏽' },
-              { name: 'Arun', age: 29, loc: 'Singapore', emoji: '👨🏽' },
-              { name: 'Meena', age: 25, loc: 'Trichy', emoji: '👩🏽' },
-              { name: 'Vignesh', age: 31, loc: 'Bengaluru', emoji: '👨🏽' },
-              { name: 'Lakshmi', age: 28, loc: 'Toronto', emoji: '👩🏽' },
-              { name: 'Suresh', age: 32, loc: 'Salem', emoji: '👨🏽' },
-            ].map((u) => (
-              <div key={u.name} className="min-w-[150px] bg-surface rounded-2xl p-4 text-center shadow-card">
-                <div className="w-14 h-14 mx-auto rounded-full bg-primary-soft flex items-center justify-center text-2xl mb-2">
-                  {u.emoji}
-                </div>
-                <p className="font-medium text-charcoal text-sm">{u.name}, {u.age}</p>
-                <p className="text-xs text-muted">{u.loc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* TRUST STRIP */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { icon: '✅', title: 'ID & selfie verified', desc: 'Government ID checks' },
-            { icon: '🔒', title: 'Privacy-first photos', desc: 'Blur until mutual interest' },
-            { icon: '🪔', title: 'Traditional filters', desc: 'Rasi, Nakshatram, Gothram' },
-            { icon: '👨‍👩‍👧', title: 'Family-friendly', desc: 'On your terms' },
+            { icon: '✅', title: 'Verified profiles', desc: 'Selfie & ID checks' },
+            { icon: '🔒', title: 'Privacy‑first photos', desc: 'Blur until mutual interest' },
+            { icon: '❤️', title: 'Meaningful connections', desc: 'Compatibility‑based' },
+            { icon: '👨‍👩‍👧', title: 'Family‑friendly', desc: 'On your terms' },
           ].map((item) => (
             <div key={item.title} className="bg-white rounded-2xl p-6 shadow-card">
               <div className="text-3xl mb-3">{item.icon}</div>
@@ -140,62 +113,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SEARCH PREVIEW */}
-      <section className="bg-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-charcoal">Looking for someone special?</h2>
-          <div className="bg-surface p-6 rounded-2xl shadow-card max-w-2xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm text-muted mb-1">Looking for</label>
-                <select className="w-full p-2 border rounded-xl bg-white">
-                  <option>Bride</option>
-                  <option>Groom</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-muted mb-1">Age</label>
-                <select className="w-full p-2 border rounded-xl bg-white">
-                  <option>25 – 32</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-muted mb-1">Community / Caste</label>
-                <select className="w-full p-2 border rounded-xl bg-white">
-                  <option>Any</option>
-                  <option>Brahmin</option>
-                  <option>Chettiar</option>
-                  <option>Gounder</option>
-                  <option>Nadar</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-muted mb-1">Location</label>
-                <select className="w-full p-2 border rounded-xl bg-white">
-                  <option>Chennai</option>
-                  <option>Coimbatore</option>
-                  <option>Bengaluru</option>
-                  <option>Overseas</option>
-                </select>
-              </div>
-              <div className="flex items-end">
-                <button className="w-full bg-primary text-white py-2 rounded-xl hover:bg-primary-dark">Explore matches</button>
-              </div>
-            </div>
-            <p className="text-xs text-muted">Community / caste filter available inside — optional and only shared if you choose to.</p>
-          </div>
-        </div>
-      </section>
-
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="max-w-6xl mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-charcoal">How Illaram works</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { step: '01', title: 'Create your profile', desc: 'Tell us about yourself and your family — in your own words.' },
-            { step: '02', title: 'Discover compatible people', desc: 'Match on values, traditional filters, lifestyle and preferences.' },
-            { step: '03', title: 'Connect with confidence', desc: 'Express interest, connect mutually, involve family when ready.' },
+            { step: '01', title: 'Create your profile', desc: 'Tell us what makes you, you.' },
+            { step: '02', title: 'Discover compatible people', desc: 'Explore based on values, lifestyle, culture and preferences.' },
+            { step: '03', title: 'Connect with confidence', desc: 'Express interest, connect mutually, and start a meaningful conversation.' },
           ].map((item) => (
             <div key={item.step} className="bg-white rounded-3xl p-8 shadow-card hover:shadow-card-hover transition">
               <span className="text-5xl font-bold text-primary-soft">{item.step}</span>
@@ -212,8 +137,8 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-charcoal">Compatibility goes deeper</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Culture', items: ['Tamil language', 'Festivals', 'Traditions', 'Native place'] },
-              { title: 'Traditions', items: ['Rasi & Nakshatram', 'Gothram', 'Subcaste'] },
+              { title: 'Culture', items: ['Tamil language', 'Festivals', 'Traditions'] },
+              { title: 'Lifestyle', items: ['Food', 'Travel', 'Habits', 'Interests'] },
               { title: 'Values', items: ['Family', 'Spirituality', 'Relationship expectations'] },
               { title: 'Future', items: ['Career', 'Location', 'Family involvement', 'Partner expectations'] },
             ].map((card) => (
@@ -237,7 +162,7 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-charcoal">A profile that feels real</h2>
         <div className="max-w-xl mx-auto bg-white rounded-3xl shadow-card overflow-hidden">
-          <div className="bg-gradient-to-br from-primary-soft to-accent/10 h-40 flex items-center justify-center text-5xl">
+          <div className="bg-gradient-to-br from-primary-soft to-primary/10 h-40 flex items-center justify-center text-5xl">
             👩🏽
           </div>
           <div className="p-8">
@@ -249,12 +174,12 @@ export default function HomePage() {
               <span className="bg-primary-soft text-primary px-3 py-1 rounded-full text-sm">✓ Verified</span>
             </div>
             <p className="mt-4 text-gray-600 italic">
-              "Family-oriented, curious about the world and happiest around people I love."
+              “Family‑oriented, curious about the world and happiest around people I love.”
             </p>
             <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-              <div className="flex justify-between"><span className="text-muted">Mother tongue</span><span className="font-medium">Tamil</span></div>
-              <div className="flex justify-between"><span className="text-muted">Rasi / Nakshatram</span><span className="font-medium">Available</span></div>
+              <div className="flex justify-between"><span className="text-muted">Tamil language</span><span className="font-medium">Very important</span></div>
               <div className="flex justify-between"><span className="text-muted">Family involvement</span><span className="font-medium">Important</span></div>
+              <div className="flex justify-between"><span className="text-muted">Lifestyle</span><span className="font-medium text-green-600">Compatible</span></div>
               <div className="flex justify-between"><span className="text-muted">Location</span><span className="font-medium">Chennai</span></div>
             </div>
             <button className="mt-8 w-full bg-primary text-white py-3 rounded-xl hover:bg-primary-dark font-medium">View Profile</button>
@@ -267,7 +192,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-charcoal mb-4">Your story. Your privacy.</h2>
-            <p className="text-muted mb-6">Your photos don't have to be public. Your personal information isn't something to display to everyone. You control who you connect with.</p>
+            <p className="text-muted mb-6">Your photos don’t have to be public. Your personal information isn’t something to display to everyone. You control who you connect with.</p>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">🔒 <span>Private photo</span></li>
               <li className="flex items-center gap-2">👁️ <span>Visible after mutual interest</span></li>
@@ -286,7 +211,7 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-charcoal">Family can be part of the journey</h2>
-          <p className="text-muted mt-2">Invite a parent or trusted family member when you're ready.</p>
+          <p className="text-muted mt-2">Invite a parent or trusted family member when you’re ready.</p>
         </div>
         <div className="flex flex-col md:flex-row items-center justify-center gap-8">
           <div className="bg-white rounded-2xl p-6 shadow-card text-center w-40">
@@ -311,7 +236,7 @@ export default function HomePage() {
       <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">Know more. Trust better.</h2>
-          <p className="text-muted max-w-xl mx-auto mb-8">Verification helps users make more informed decisions. It doesn't guarantee someone's character or intentions.</p>
+          <p className="text-muted max-w-xl mx-auto mb-8">Verification helps users make more informed decisions. It doesn’t guarantee someone’s character or intentions.</p>
           <div className="flex flex-wrap justify-center gap-6">
             {['Phone verified', 'Selfie verified', 'Government ID verified', 'Optional background check'].map((item) => (
               <span key={item} className="bg-primary-soft text-primary px-5 py-2 rounded-full text-sm font-medium">✓ {item}</span>
@@ -327,17 +252,17 @@ export default function HomePage() {
           <div className="w-24 h-24 bg-accent-light rounded-full flex items-center justify-center text-4xl">❤️</div>
           <div className="w-24 h-24 bg-primary-soft rounded-full flex items-center justify-center text-4xl">👨🏽</div>
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-charcoal">It's a match.</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-charcoal">It’s a match.</h2>
         <p className="text-muted mt-2">Both of you are interested in getting to know each other.</p>
         <button className="mt-6 bg-primary text-white px-8 py-3 rounded-full hover:bg-primary-dark font-medium">Start a conversation</button>
       </section>
 
-      {/* SUCCESS STORIES */}
+      {/* SUCCESS STORIES placeholder */}
       <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-charcoal">Real people. Real connections.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+            {[1,2,3].map((i) => (
               <div key={i} className="bg-surface rounded-2xl p-6 shadow-card">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary-soft"></div>
@@ -346,7 +271,7 @@ export default function HomePage() {
                     <p className="text-sm text-muted">Location</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 italic">"We connected through shared values and discovered that our families had more in common than we expected."</p>
+                <p className="text-sm text-gray-600 italic">“We connected through shared values and discovered that our families had more in common than we expected.”</p>
                 <button className="mt-4 text-primary font-medium text-sm">Read their story</button>
               </div>
             ))}
@@ -368,10 +293,43 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* SEARCH PREVIEW */}
+      <section className="bg-white py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-charcoal">Looking for someone special?</h2>
+          <div className="bg-surface p-6 rounded-2xl shadow-card max-w-lg mx-auto">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm text-muted mb-1">Looking for</label>
+                <select className="w-full p-2 border rounded-xl bg-white">
+                  <option>Bride</option>
+                  <option>Groom</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-muted mb-1">Age</label>
+                <select className="w-full p-2 border rounded-xl bg-white">
+                  <option>25 – 32</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-muted mb-1">Location</label>
+                <select className="w-full p-2 border rounded-xl bg-white">
+                  <option>Chennai</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button className="w-full bg-primary text-white py-2 rounded-xl hover:bg-primary-dark">Explore matches</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* WHY ILLARAM */}
       <section className="max-w-6xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-12">
         <div className="bg-white p-8 rounded-3xl shadow-card">
-          <h3 className="text-xl font-semibold mb-4 text-charcoal">Traditional matrimony sites</h3>
+          <h3 className="text-xl font-semibold mb-4 text-charcoal">Traditional matrimony</h3>
           <ul className="space-y-2 text-sm text-muted">
             <li>Large profile databases</li>
             <li>Lots of filters</li>
@@ -383,10 +341,10 @@ export default function HomePage() {
           <h3 className="text-xl font-semibold mb-4">Illaram</h3>
           <ul className="space-y-2 text-sm">
             <li>Meaningful profiles</li>
-            <li>Privacy-first</li>
-            <li>Traditional filters + modern compatibility</li>
-            <li>Family involvement, on your terms</li>
-            <li>Government ID verification</li>
+            <li>Privacy‑first</li>
+            <li>Modern compatibility</li>
+            <li>Family involvement</li>
+            <li>Verification</li>
             <li>Premium experience</li>
           </ul>
         </div>
@@ -395,7 +353,7 @@ export default function HomePage() {
       {/* PREMIUM */}
       <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">When you're ready to go further.</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">When you’re ready to go further.</h2>
           <p className="text-muted mb-8">Unlimited interests · Advanced filters · Enhanced discovery · Additional privacy controls</p>
           <Link href="/premium" className="bg-accent text-white px-8 py-3 rounded-full font-medium hover:bg-accent/80 transition">Explore Premium</Link>
         </div>
@@ -408,8 +366,7 @@ export default function HomePage() {
           {[
             { q: 'Is Illaram only for Tamil people?', a: 'Illaram is designed primarily for Tamils worldwide, but everyone who values Tamil culture and traditions is welcome.' },
             { q: 'Can Tamils living outside India use Illaram?', a: 'Yes, Illaram is built for the global Tamil diaspora, including Singapore, Malaysia, UK, USA, Canada, UAE, and Australia.' },
-            { q: 'Does Illaram support traditional filters?', a: 'Yes. You can filter by Rasi, Nakshatram, Gothram, subcaste, and more. Full horoscope compatibility scoring is on the roadmap.' },
-            { q: 'How does profile verification work?', a: 'Users can verify their phone number, upload a selfie, and optionally verify with a government ID. We show verification badges to increase trust.' },
+            { q: 'How does profile verification work?', a: 'Users can verify their phone number, upload a selfie, and optionally submit government ID. We show verification badges to increase trust.' },
             { q: 'Are my photos private?', a: 'By default, photos are blurred to other users until mutual interest is established. You can also request photo access individually.' },
             { q: 'Can my parents participate?', a: 'Yes, through FamilyLink you can invite a parent or trusted family member to help manage your profile, with your approval.' },
             { q: 'How does mutual interest work?', a: 'When you send an interest and the other person also accepts, it becomes a mutual match, unlocking private photos and chat.' },
@@ -453,16 +410,16 @@ export default function HomePage() {
               <li>Tamil Matrimony</li>
               <li>Tamil Brides</li>
               <li>Tamil Grooms</li>
-              <li>Chennai Matrimony</li>
-              <li>Singapore Tamil Matrimony</li>
-              <li>UK Tamil Matrimony</li>
+              <li>Chennai</li>
+              <li>Singapore</li>
+              <li>UK</li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold text-white mb-3">Resources</h4>
             <ul className="space-y-1 text-sm">
               <li>Matrimony Guide</li>
-              <li>Traditional Filters Guide</li>
+              <li>Relationship & Compatibility</li>
               <li>Tamil Culture</li>
               <li>Safety Guide</li>
               <li>FAQ</li>

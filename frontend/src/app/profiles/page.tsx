@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { IndividualProfile } from '@/types';
-import Link from 'next/link';
+import ProfileCard from '@/components/ProfileCard';
 
 export default function ProfilesPage() {
   const [filters, setFilters] = useState({
@@ -57,14 +57,14 @@ export default function ProfilesPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Browse Profiles</h1>
-        <span className="text-sm text-gray-500">{data?.results?.length || 0} results</span>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-charcoal">Discover</h1>
+        <span className="text-sm text-muted">{data?.results?.length || 0} profiles</span>
       </div>
 
-      {/* Search and Sort */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      {/* Search + Sort */}
+      <div className="bg-white rounded-2xl shadow-card p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
@@ -72,141 +72,81 @@ export default function ProfilesPage() {
             placeholder="Search by name, education, profession..."
             value={filters.search}
             onChange={handleFilterChange}
-            className="flex-1 p-2 border rounded"
+            className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary"
           />
           <select
             name="ordering"
             value={filters.ordering}
             onChange={handleFilterChange}
-            className="p-2 border rounded"
+            className="p-3 border border-gray-200 rounded-xl"
           >
             <option value="-last_active">Most Active</option>
-            <option value="-created_at">Newest Members</option>
+            <option value="-created_at">Newest</option>
             <option value="date_of_birth">Youngest First</option>
-            <option value="-date_of_birth">Oldest First</option>
           </select>
         </div>
       </div>
 
-      {/* Advanced Filters */}
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <input
-            type="text"
-            name="location_city"
-            placeholder="City"
-            value={filters.location_city}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="min_age"
-            placeholder="Min Age"
-            value={filters.min_age}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="max_age"
-            placeholder="Max Age"
-            value={filters.max_age}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          />
-          <select
-            name="gender"
-            value={filters.gender}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          >
+      {/* Filter chips/panel */}
+      <div className="bg-white rounded-2xl shadow-card p-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <input type="text" name="location_city" placeholder="City" value={filters.location_city} onChange={handleFilterChange} className="p-3 border rounded-xl" />
+          <input type="number" name="min_age" placeholder="Min Age" value={filters.min_age} onChange={handleFilterChange} className="p-3 border rounded-xl" />
+          <input type="number" name="max_age" placeholder="Max Age" value={filters.max_age} onChange={handleFilterChange} className="p-3 border rounded-xl" />
+          <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-3 border rounded-xl">
             <option value="">All Genders</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          <select
-            name="diet"
-            value={filters.diet}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          >
+          <select name="diet" value={filters.diet} onChange={handleFilterChange} className="p-3 border rounded-xl">
             <option value="">All Diets</option>
             <option value="vegetarian">Vegetarian</option>
             <option value="non_vegetarian">Non-Vegetarian</option>
             <option value="eggetarian">Eggetarian</option>
             <option value="vegan">Vegan</option>
           </select>
-          <select
-            name="marital_status"
-            value={filters.marital_status}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          >
+          <select name="marital_status" value={filters.marital_status} onChange={handleFilterChange} className="p-3 border rounded-xl">
             <option value="">All Marital Status</option>
             <option value="never_married">Never Married</option>
             <option value="divorced">Divorced</option>
             <option value="widowed">Widowed</option>
-            <option value="separated">Separated</option>
           </select>
-          <select
-            name="spiritual_orientation"
-            value={filters.spiritual_orientation}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          >
-            <option value="">All Spiritual Orientation</option>
+          <select name="spiritual_orientation" value={filters.spiritual_orientation} onChange={handleFilterChange} className="p-3 border rounded-xl">
+            <option value="">All Spiritual</option>
             <option value="temple_going">Temple-going</option>
             <option value="spiritual_not_religious">Spiritual but not religious</option>
             <option value="cultural_only">Cultural only</option>
             <option value="atheist">Atheist</option>
           </select>
         </div>
-        <div className="mt-3 text-right">
-          <button
-            onClick={clearFilters}
-            className="text-sm text-teal-600 hover:underline"
-          >
-            Clear All Filters
-          </button>
+        <div className="mt-4 text-right">
+          <button onClick={clearFilters} className="text-sm text-primary hover:text-primary-dark">Clear Filters</button>
         </div>
       </div>
 
-      {/* Loading / Error */}
-      {isLoading && <p className="text-gray-500">Loading profiles...</p>}
-      {error && <p className="text-red-500">Failed to load profiles.</p>}
+      {/* Loading state */}
+      {isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-80 bg-gray-200 rounded-2xl animate-pulse"></div>
+          ))}
+        </div>
+      )}
 
-      {/* Profiles Grid */}
+      {error && <div className="text-red-500">Failed to load profiles.</div>}
+
+      {/* Grid */}
       {!isLoading && !error && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data?.results?.map((profile) => (
-            <div key={profile.id} className="bg-white p-4 rounded shadow">
-              <h2 className="text-lg font-semibold">{profile.full_name}</h2>
-              <p className="text-sm text-gray-600">{profile.location_city}, {profile.location_country}</p>
-              <p className="text-sm">{profile.profession || profile.education}</p>
-              <p className="text-sm text-gray-500">
-                Age: {new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear()}
-              </p>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {profile.verification_badges.map((badge) => (
-                  <span key={badge} className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs">
-                    {badge}
-                  </span>
-                ))}
-              </div>
-              <Link
-                href={`/profiles/${profile.id}`}
-                className="mt-3 inline-block text-teal-600"
-              >
-                View Profile
-              </Link>
-            </div>
+            <ProfileCard key={profile.id} profile={profile} />
           ))}
           {data?.results?.length === 0 && (
-            <p className="text-gray-500 col-span-full text-center py-8">
-              No profiles match your filters.
-            </p>
+            <div className="col-span-full text-center py-16 text-muted">
+              <p className="text-lg">No profiles match your filters.</p>
+              <button onClick={clearFilters} className="mt-4 text-primary">Clear filters</button>
+            </div>
           )}
         </div>
       )}

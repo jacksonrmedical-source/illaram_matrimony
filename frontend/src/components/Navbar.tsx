@@ -19,26 +19,24 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-teal-700 text-white shadow">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/" className="font-bold text-lg">Illaram</Link>
-        <div className="flex gap-4 items-center">
+    <nav className="bg-white border-b border-gray-100 shadow-sm">
+      <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <Link href="/" className="font-bold text-2xl text-primary">Illaram</Link>
+        <div className="flex gap-6 items-center">
           {accessToken ? (
             <>
-              <Link href="/profiles" className="hover:underline">Browse Profiles</Link>
-              <Link href="/interests" className="hover:underline">Interests</Link>
-              <Link href="/chat" className="hover:underline">Chat</Link>
-              <Link href="/profile/photos" className="hover:underline">My Photos</Link>
-              <Link href="/profiles/edit" className="hover:underline">Edit Profile</Link>
-              <Link href="/premium" className="hover:underline">Premium</Link>
-              <button onClick={handleLogout} className="bg-white text-teal-700 px-3 py-1 rounded hover:bg-gray-100">
-                Logout
-              </button>
+              <Link href="/profiles" className="text-sm font-medium text-charcoal hover:text-primary">Discover</Link>
+              <Link href="/interests" className="text-sm font-medium text-charcoal hover:text-primary">Interests</Link>
+              <Link href="/chat" className="text-sm font-medium text-charcoal hover:text-primary">Messages</Link>
+              <Link href="/profile/photos" className="text-sm font-medium text-charcoal hover:text-primary">Photos</Link>
+              <Link href="/profiles/edit" className="text-sm font-medium text-charcoal hover:text-primary">Profile</Link>
+              <Link href="/premium" className="text-sm font-medium text-accent hover:text-accent/80">Premium</Link>
+              <button onClick={handleLogout} className="text-sm text-muted hover:text-charcoal">Logout</button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hover:underline">Login</Link>
-              <Link href="/register" className="hover:underline">Register</Link>
+              <Link href="/login" className="text-sm font-medium text-primary hover:text-primary-dark">Login</Link>
+              <Link href="/register" className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-dark">Register</Link>
             </>
           )}
         </div>

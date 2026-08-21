@@ -15,7 +15,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [accessToken, router]);
 
   if (!accessToken) {
-    return <div className="p-8 text-center">Redirecting to login...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="animate-pulse text-primary">Loading...</div>
+      </div>
+    );
   }
 
   return <>{children}</>;

@@ -11,21 +11,21 @@ export default function BottomNav() {
   if (!accessToken) return null;
 
   const items = [
-    { href: '/profiles', label: 'Browse', icon: '👤' },
+    { href: '/profiles', label: 'Discover', icon: '👤' },
     { href: '/interests', label: 'Interests', icon: '💌' },
-    { href: '/chat', label: 'Chat', icon: '💬' },
+    { href: '/chat', label: 'Messages', icon: '💬' },
     { href: '/profile/photos', label: 'Photos', icon: '📸' },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-50">
-      <div className="flex justify-around py-2">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
+      <div className="flex justify-around py-3">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={`flex flex-col items-center text-xs ${
-              pathname?.startsWith(item.href) ? 'text-teal-700 font-semibold' : 'text-gray-500'
+              pathname?.startsWith(item.href) ? 'text-primary font-semibold' : 'text-muted'
             }`}
           >
             <span className="text-xl">{item.icon}</span>

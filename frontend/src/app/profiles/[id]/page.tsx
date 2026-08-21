@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { IndividualProfile } from '@/types';
 import { useState } from 'react';
@@ -9,7 +9,6 @@ import { useState } from 'react';
 export default function ProfileDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const profileId = params?.id as string;
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -32,12 +31,8 @@ export default function ProfileDetailPage() {
         setActionLoading(false);
       }
     },
-    onSuccess: () => {
-      alert('Interest sent!');
-    },
-    onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Failed to send interest');
-    },
+    onSuccess: () => alert('Interest sent!'),
+    onError: (err: any) => setError(err.response?.data?.detail || 'Failed to send interest'),
   });
 
   const requestPhotoMutation = useMutation({
@@ -50,12 +45,8 @@ export default function ProfileDetailPage() {
         setActionLoading(false);
       }
     },
-    onSuccess: () => {
-      alert('Photo request sent!');
-    },
-    onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Failed to request photo');
-    },
+    onSuccess: () => alert('Photo request sent!'),
+    onError: (err: any) => setError(err.response?.data?.detail || 'Failed to request photo'),
   });
 
   const startConversationMutation = useMutation({
@@ -69,79 +60,106 @@ export default function ProfileDetailPage() {
         setActionLoading(false);
       }
     },
-    onSuccess: (data) => {
-      router.push(`/chat?conversation_id=${data.id}`);
-    },
-    onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Failed to start conversation');
-    },
+    onSuccess: (data) => router.push(`/chat?conversation_id=${data.id}`),
+    onError: (err: any) => setError(err.response?.data?.detail || 'Failed to start conversation'),
   });
 
-  if (isLoading) return <div className="p-8">Loading profile...</div>;
-  if (isError || !profile) return <div className="p-8 text-red-500">Profile not found.</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted">Loading profile...</div>;
+  if (isError || !profile) return <div className="p-8 text-center text-red-500">Profile not found.</div>;
+
+  const age = new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear();
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <button onClick={() => router.back()} className="text-teal-600 mb-4">← Back</button>
-      <div className="bg-white rounded shadow p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{profile.full_name}</h1>
-          <div className="flex gap-2">
-            {profile.verification_badges.map((badge) => (
-              <span key={badge} className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs">{badge}</span>
-            ))}
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Back */}
+      <button onClick={() => router.back()} className="text-primary hover:text-primary-dark mb-6">← Back</button>
+
+      <div className="bg-white rounded-3xl shadow-card overflow-hidden animate-fade-in">
+        {/* Photo area */}
+        <div className="h-72 bg-gradient-to-br from-primary-soft to-primary/20 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-5xl mb-3">🔒</div>
+            <p className="text-primary font-medium">Private photo</p>
+            <p className="text-sm text-muted mt-1">Visible after mutual interest</p>
           </div>
         </div>
-        <p className="text-gray-600">{profile.location_city}, {profile.location_state}, {profile.location_country}</p>
-        <p className="text-sm text-gray-500">Last active: {new Date(profile.last_active).toLocaleDateString()}</p>
-        <p className="text-sm text-gray-500">Profile completeness: {profile.completeness_score}%</p>
 
-        <hr className="my-4" />
+        {/* Main info */}
+        <div className="p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-charcoal">{profile.full_name}</h1>
+              <p className="text-muted">{profile.location_city}, {profile.location_state}, {profile.location_country}</p>
+            </div>
+            <div className="flex gap-2">
+              {profile.verification_badges.map((badge) => (
+                <span key={badge} className="bg-primary-soft text-primary px-3 py-1 rounded-full text-sm font-medium">
+                  {badge.replace('_', ' ')}
+                </span>
+              ))}
+            </div>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div><strong>Gender:</strong> {profile.gender}</div>
-          <div><strong>Age:</strong> {new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear()}</div>
-          <div><strong>Education:</strong> {profile.education || '-'}</div>
-          <div><strong>Profession:</strong> {profile.profession || '-'}</div>
-          <div><strong>Diet:</strong> {profile.diet}</div>
-          <div><strong>Spiritual:</strong> {profile.spiritual_orientation}</div>
-          <div><strong>Family involvement:</strong> {profile.family_involvement}</div>
-          <div><strong>Relocation:</strong> {profile.relocation_willingness}</div>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm">
+            <span className="bg-gray-100 px-3 py-1 rounded-full">{age} yrs</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">{profile.diet}</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">{profile.profession || profile.education}</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">{profile.spiritual_orientation}</span>
+          </div>
+
+          {/* About */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-2">About</h2>
+            <p className="text-gray-700">{profile.about_me || 'No description yet.'}</p>
+          </div>
+
+          {/* Details */}
+          <div className="mt-8 grid grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-medium text-sm text-muted">Education</h3>
+              <p className="text-charcoal">{profile.education || '-'}</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-sm text-muted">Profession</h3>
+              <p className="text-charcoal">{profile.profession || '-'}</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-sm text-muted">Family Involvement</h3>
+              <p className="text-charcoal">{profile.family_involvement}</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-sm text-muted">Relocation</h3>
+              <p className="text-charcoal">{profile.relocation_willingness}</p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-8 flex flex-wrap gap-4">
+            <button
+              onClick={() => sendInterestMutation.mutate()}
+              disabled={actionLoading}
+              className="flex-1 bg-primary text-white py-3 rounded-xl hover:bg-primary-dark font-medium"
+            >
+              Send Interest
+            </button>
+            <button
+              onClick={() => requestPhotoMutation.mutate()}
+              disabled={actionLoading}
+              className="flex-1 bg-white border border-primary text-primary py-3 rounded-xl hover:bg-primary-soft font-medium"
+            >
+              Request Photo
+            </button>
+            <button
+              onClick={() => startConversationMutation.mutate()}
+              disabled={actionLoading}
+              className="flex-1 bg-accent text-white py-3 rounded-xl hover:bg-accent/80 font-medium"
+            >
+              Message
+            </button>
+          </div>
+
+          {error && <p className="text-red-500 mt-4">{error}</p>}
         </div>
-
-        {profile.about_me && (
-          <>
-            <hr className="my-4" />
-            <h2 className="font-semibold">About Me</h2>
-            <p className="text-sm text-gray-700">{profile.about_me}</p>
-          </>
-        )}
-
-        <hr className="my-4" />
-        <div className="flex gap-4">
-          <button
-            onClick={() => sendInterestMutation.mutate()}
-            disabled={actionLoading}
-            className="bg-teal-600 text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            Send Interest
-          </button>
-          <button
-            onClick={() => requestPhotoMutation.mutate()}
-            disabled={actionLoading}
-            className="bg-gray-200 text-gray-800 px-4 py-2 rounded disabled:opacity-50"
-          >
-            Request Photo
-          </button>
-          <button
-            onClick={() => startConversationMutation.mutate()}
-            disabled={actionLoading}
-            className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            Message
-          </button>
-        </div>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
     </div>
   );

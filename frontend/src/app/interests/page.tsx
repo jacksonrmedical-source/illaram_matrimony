@@ -24,7 +24,7 @@ export default function InterestsPage() {
   const [tab, setTab] = useState<'received' | 'sent'>('received');
   const [error, setError] = useState('');
 
-  const { data: myProfile, isLoading: profileLoading } = useQuery<IndividualProfile>({
+  const { data: myProfile } = useQuery<IndividualProfile>({
     queryKey: ['myProfile'],
     queryFn: async () => {
       const response = await api.get('/profiles/individual-profiles/me/');
@@ -32,7 +32,7 @@ export default function InterestsPage() {
     },
   });
 
-  const { data: interestsData, isLoading: interestsLoading } = useQuery<{ results: Interest[] }>({
+  const { data: interestsData, isLoading } = useQuery<{ results: Interest[] }>({
     queryKey: ['interests'],
     queryFn: async () => {
       const response = await api.get('/interests/interests/');
@@ -44,18 +44,14 @@ export default function InterestsPage() {
     mutationFn: async (interestId: string) => {
       await api.post(`/interests/interests/${interestId}/accept/`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interests'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['interests'] }),
   });
 
   const declineMutation = useMutation({
     mutationFn: async (interestId: string) => {
       await api.post(`/interests/interests/${interestId}/decline/`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interests'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['interests'] }),
   });
 
   const startConversationMutation = useMutation({
@@ -63,102 +59,90 @@ export default function InterestsPage() {
       const response = await api.post('/chat/conversations/', { participant_id: participantId });
       return response.data;
     },
-    onSuccess: (data) => {
-      router.push(`/chat?conversation_id=${data.id}`);
-    },
-    onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Failed to start conversation');
-    },
+    onSuccess: (data) => router.push(`/chat?conversation_id=${data.id}`),
+    onError: (err: any) => setError(err.response?.data?.detail || 'Failed to start conversation'),
   });
 
-  if (profileLoading || interestsLoading) return <div className="p-8">Loading...</div>;
+  if (isLoading) return <div className="p-8 text-center">Loading...</div>;
 
   const myId = myProfile?.id;
   const interests = interestsData?.results || [];
-
   const received = interests.filter(i => i.receiver === myId);
   const sent = interests.filter(i => i.sender === myId);
   const displayed = tab === 'received' ? received : sent;
-
-  const getOtherProfileId = (interest: Interest) => {
-    return interest.sender === myId ? interest.receiver : interest.sender;
-  };
+  const getOtherProfileId = (interest: Interest) => interest.sender === myId ? interest.receiver : interest.sender;
 
   return (
     <AuthGuard>
       <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Interests</h1>
-        <div className="flex gap-4 mb-6">
+        <h1 className="text-3xl font-bold text-charcoal mb-6">Interests</h1>
+
+        {/* Tabs */}
+        <div className="flex gap-2 bg-white p-1 rounded-2xl shadow-card mb-6">
           <button
             onClick={() => setTab('received')}
-            className={`px-4 py-2 rounded ${tab === 'received' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+            className={`flex-1 py-2.5 rounded-xl font-medium ${tab === 'received' ? 'bg-primary text-white' : 'text-muted'}`}
           >
             Received ({received.length})
           </button>
           <button
             onClick={() => setTab('sent')}
-            className={`px-4 py-2 rounded ${tab === 'sent' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+            className={`flex-1 py-2.5 rounded-xl font-medium ${tab === 'sent' ? 'bg-primary text-white' : 'text-muted'}`}
           >
             Sent ({sent.length})
           </button>
         </div>
 
         {displayed.length === 0 ? (
-          <p className="text-gray-500">No interests yet.</p>
+          <div className="text-center py-16 text-muted">
+            <p className="text-xl">No interests yet.</p>
+            <button onClick={() => router.push('/profiles')} className="mt-4 text-primary">Browse Profiles</button>
+          </div>
         ) : (
-          <ul className="space-y-4">
+          <div className="space-y-4">
             {displayed.map((interest) => (
-              <li key={interest.id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between items-center">
+              <div key={interest.id} className="bg-white rounded-2xl shadow-card p-5 animate-fade-in">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">
-                      {tab === 'received'
-                        ? interest.sender_name || interest.sender
-                        : interest.receiver_name || interest.receiver}
+                    <h3 className="font-semibold text-charcoal">
+                      {tab === 'received' ? interest.sender_name || interest.sender : interest.receiver_name || interest.receiver}
+                    </h3>
+                    <p className="text-sm text-muted">
+                      {interest.status}{interest.photo_request && ' · Photo requested'}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      Status: {interest.status}
-                      {interest.photo_request && ' · Photo requested'}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(interest.created_at).toLocaleString()}
-                    </p>
+                    <p className="text-xs text-muted">{new Date(interest.created_at).toLocaleString()}</p>
                   </div>
 
-                  {/* Show Accept/Decline only for received, sent status */}
-                  {tab === 'received' && interest.status === 'sent' && (
-                    <div className="flex gap-2">
+                  <div className="flex gap-2">
+                    {tab === 'received' && interest.status === 'sent' && (
+                      <>
+                        <button
+                          onClick={() => acceptMutation.mutate(interest.id)}
+                          className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => declineMutation.mutate(interest.id)}
+                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium"
+                        >
+                          Decline
+                        </button>
+                      </>
+                    )}
+                    {interest.status === 'accepted' && (
                       <button
-                        onClick={() => acceptMutation.mutate(interest.id)}
-                        disabled={acceptMutation.isPending}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                        onClick={() => startConversationMutation.mutate(getOtherProfileId(interest))}
+                        className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-medium"
                       >
-                        Accept
+                        Message
                       </button>
-                      <button
-                        onClick={() => declineMutation.mutate(interest.id)}
-                        disabled={declineMutation.isPending}
-                        className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Show Message button for accepted interests (both tabs) */}
-                  {interest.status === 'accepted' && (
-                    <button
-                      onClick={() => startConversationMutation.mutate(getOtherProfileId(interest))}
-                      disabled={startConversationMutation.isPending}
-                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
-                    >
-                      Message
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
 
         {error && <p className="text-red-500 mt-4">{error}</p>}
