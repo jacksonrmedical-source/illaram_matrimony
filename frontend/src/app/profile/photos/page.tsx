@@ -82,10 +82,10 @@ export default function PhotosPage() {
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+              className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary-soft file:text-primary hover:file:bg-primary-soft"
             />
           </label>
-          {uploadMutation.isPending && <p className="text-gray-500">Uploading...</p>}
+          {uploadMutation.isPending && <p className="text-muted">Uploading...</p>}
           {uploadError && <p className="text-red-500">{uploadError}</p>}
         </div>
 
@@ -100,9 +100,9 @@ export default function PhotosPage() {
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm">
                   {photo.is_primary ? (
-                    <span className="text-teal-600 font-semibold">Primary</span>
+                    <span className="text-primary font-semibold">Primary</span>
                   ) : (
-                    <span className="text-gray-500">Secondary</span>
+                    <span className="text-muted">Secondary</span>
                   )}
                 </span>
                 <div className="flex gap-2">
@@ -110,7 +110,7 @@ export default function PhotosPage() {
                     <button
                       onClick={() => setPrimaryMutation.mutate(photo.id)}
                       disabled={setPrimaryMutation.isPending}
-                      className="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded disabled:opacity-50"
+                      className="text-xs bg-primary-soft text-primary px-2 py-1 rounded disabled:opacity-50"
                     >
                       Set Primary
                     </button>
@@ -131,7 +131,7 @@ export default function PhotosPage() {
             </div>
           ))}
           {photosData?.results?.length === 0 && (
-            <p className="text-gray-500">No photos yet. Upload one above.</p>
+            <p className="text-muted">No photos yet. Upload one above.</p>
           )}
         </div>
       </div>

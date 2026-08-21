@@ -273,7 +273,7 @@ export default function EditProfilePage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-teal-600 text-white py-2 rounded disabled:opacity-50"
+            className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
           >
             {isSubmitting ? 'Updating...' : 'Update Profile'}
           </button>

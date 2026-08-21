@@ -1,6 +1,8 @@
 import random
 import requests
 from io import BytesIO
+from PIL import Image, ImageFilter
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.core.files import File
 from django.utils import timezone
@@ -12,7 +14,6 @@ class Command(BaseCommand):
     help = 'Seed 50 dummy profiles with photos'
 
     def handle(self, *args, **kwargs):
-        # Sample data pools
         first_names_m = ['Arun', 'Bala', 'Chandru', 'Deepak', 'Ezhil', 'Ganesh', 'Hari', 'Karthik', 'Mani', 'Naveen',
                          'Praveen', 'Ramesh', 'Sathish', 'Vijay', 'Yogesh', 'Ajith', 'Dinesh', 'Kumar', 'Suresh', 'Ravi']
         first_names_f = ['Anitha', 'Bhavani', 'Chitra', 'Divya', 'Eswari', 'Gayathri', 'Hema', 'Janani', 'Kavya', 'Lakshmi',
@@ -41,11 +42,8 @@ class Command(BaseCommand):
         rasis = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 'Tula', 'Vrischika', 'Dhanu', 'Makara',
                  'Kumbha', 'Meena', '', '', '', '', '', '', '', '']
 
-        # Delete existing dummy users (optional; be careful)
-        # We'll delete users with phone startswith '99999' to avoid duplicates
+        # Delete existing dummy profiles
         User.objects.filter(phone__startswith='99999').delete()
-        IndividualProfile.objects.filter(user__phone__startswith='99999').delete()
-        Photo.objects.filter(profile__user__phone__startswith='99999').delete()
 
         for i in range(50):
             gender = random.choice(['male', 'female'])
@@ -54,11 +52,8 @@ class Command(BaseCommand):
             else:
                 first_name = random.choice(first_names_f)
             full_name = f'{first_name} {random.choice(["Kumar", "Sundar", "Rajan", "Krishnan", "Murugan", "Iyer", "Pillai", "Nair", "Menon", "Reddy"])}'
-            phone = f'99999{i:05d}'[-10:]  # ensure 10 digits
-            phone = f'99999{i:05d}'[-10:] if len(f'99999{i:05d}') == 10 else f'99999{i:05d}'
-            # Create user
+            phone = f'99999{i:05d}'[-10:]
             user = User.objects.create_user(phone=phone, password='testpass123', role='individual')
-            # Random date of birth (age between 20 and 38)
             age = random.randint(20, 38)
             dob = date.today() - timedelta(days=age*365 + random.randint(0, 364))
             city = random.choice(cities)
@@ -91,7 +86,8 @@ class Command(BaseCommand):
                 rasi=random.choice(rasis),
                 last_active=timezone.now() - timedelta(days=random.randint(0, 30)),
             )
-            # Download random portrait
+
+            # Download image and create blurred version
             try:
                 if gender == 'male':
                     img_url = f'https://randomuser.me/api/portraits/men/{random.randint(0,99)}.jpg'
@@ -103,10 +99,16 @@ class Command(BaseCommand):
                     photo = Photo(profile=profile)
                     photo.image.save(f'seed_{phone}.jpg', File(photo_file), save=False)
                     photo.save()
-                    # generate blurred? no, but we can set blurred_image = image for now
-                    photo.blurred_image = photo.image
-                    photo.save(update_fields=['blurred_image'])
-            except Exception as e:
-                self.stdout.write(self.style.WARNING(f'Could not download photo for {full_name}: {e}'))
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded 50 dummy profiles'))
+                    # Generate blurred version
+                    img = Image.open(photo.image.path)
+                    blurred = img.filter(ImageFilter.GaussianBlur(25))
+                    buffer = BytesIO()
+                    blurred.save(buffer, format='JPEG')
+                    buffer.seek(0)
+                    photo.blurred_image.save(f'blurred_{phone}.jpg', ContentFile(buffer.read()), save=False)
+                    photo.save()
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f'Could not create photo for {full_name}: {e}'))
+
+        self.stdout.write(self.style.SUCCESS('Successfully seeded 50 dummy profiles with blurred photos'))

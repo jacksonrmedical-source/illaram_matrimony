@@ -74,20 +74,20 @@ export default function InterestsPage() {
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setTab('received')}
-            className={`px-4 py-2 rounded ${tab === 'received' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${tab === 'received' ? 'bg-primary text-white' : 'bg-primary-soft/50'}`}
           >
             Received ({received.length})
           </button>
           <button
             onClick={() => setTab('sent')}
-            className={`px-4 py-2 rounded ${tab === 'sent' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${tab === 'sent' ? 'bg-primary text-white' : 'bg-primary-soft/50'}`}
           >
             Sent ({sent.length})
           </button>
         </div>
 
         {displayed.length === 0 ? (
-          <p className="text-gray-500">No interests yet.</p>
+          <p className="text-muted">No interests yet.</p>
         ) : (
           <ul className="space-y-4">
             {displayed.map((interest) => (
@@ -99,11 +99,11 @@ export default function InterestsPage() {
                         ? interest.sender_name || interest.sender
                         : interest.receiver_name || interest.receiver}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted">
                       Status: {interest.status}
-                      {interest.photo_request && ' · Photo requested'}
+                      {interest.photo_request && ' Â· Photo requested'}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-muted">
                       {new Date(interest.created_at).toLocaleString()}
                     </p>
                   </div>

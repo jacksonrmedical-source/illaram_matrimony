@@ -10,13 +10,15 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
     is_selfie_verified = serializers.SerializerMethodField()
     is_govt_id_verified = serializers.SerializerMethodField()
     verification_badges = serializers.SerializerMethodField()
+    primary_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = IndividualProfile
         fields = '__all__'
         read_only_fields = (
             'user', 'created_at', 'updated_at', 'completeness_score',
-            'is_selfie_verified', 'is_govt_id_verified', 'verification_badges'
+            'is_selfie_verified', 'is_govt_id_verified', 'verification_badges',
+            'primary_photo'
         )
 
     def get_completeness_score(self, obj):
@@ -28,16 +30,12 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
             'diet', 'family_involvement', 'relocation_willingness',
             'caste', 'subcaste', 'gothram', 'natchathiram', 'rasi'
         ]
-
         filled = 0
-        total = len(important_fields)
-
         for field in important_fields:
             value = getattr(obj, field, None)
             if value is not None and value != '' and value != [] and value != {}:
                 filled += 1
-
-        return int((filled / total) * 100)
+        return int((filled / len(important_fields)) * 100)
 
     def get_is_selfie_verified(self, obj):
         return obj.user.verifications.filter(
@@ -56,6 +54,15 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
         if self.get_is_govt_id_verified(obj):
             badges.append('government_id')
         return badges
+
+    def get_primary_photo(self, obj):
+        photo = obj.photos.filter(is_primary=True).first() or obj.photos.first()
+        if photo and photo.blurred_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(photo.blurred_image.url)
+            return photo.blurred_image.url
+        return None
 
 
 class ParentProfileSerializer(serializers.ModelSerializer):

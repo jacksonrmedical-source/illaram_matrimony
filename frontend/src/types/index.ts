@@ -29,6 +29,7 @@ export interface IndividualProfile {
   verification_badges: string[];
   last_active: string;
   user: string;
+  primary_photo?: string | null;
 }
 
 export interface AuthResponse {

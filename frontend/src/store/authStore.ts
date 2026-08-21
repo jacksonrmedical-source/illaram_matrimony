@@ -23,9 +23,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   hydrate: () => {
     if (typeof window !== 'undefined') {
-      const access = localStorage.getItem('access_token');
-      const refresh = localStorage.getItem('refresh_token');
-      set({ accessToken: access, refreshToken: refresh });
+      set({
+        accessToken: localStorage.getItem('access_token'),
+        refreshToken: localStorage.getItem('refresh_token'),
+      });
     }
   },
 }));

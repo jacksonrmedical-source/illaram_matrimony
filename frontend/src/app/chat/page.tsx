@@ -130,7 +130,7 @@ export default function ChatPage() {
                   <h3 className="font-semibold text-charcoal">
                     {getOtherParticipantName(conversationsData?.results?.find(c => c.id === selectedConversationId)!)}
                   </h3>
-                  <span className="text-xs text-green-600">● Online</span>
+                  <span className="text-xs text-green-600">â— Online</span>
                 </div>
               </div>
 
@@ -163,7 +163,7 @@ export default function ChatPage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Type a message..."
-                  className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary"
+                  className="flex-1 p-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary"
                 />
                 <button
                   onClick={handleSend}

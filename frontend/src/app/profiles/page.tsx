@@ -72,13 +72,13 @@ export default function ProfilesPage() {
             placeholder="Search by name, education, profession..."
             value={filters.search}
             onChange={handleFilterChange}
-            className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary"
+            className="flex-1 p-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary"
           />
           <select
             name="ordering"
             value={filters.ordering}
             onChange={handleFilterChange}
-            className="p-3 border border-gray-200 rounded-xl"
+            className="p-3 border border-gray-100 rounded-xl"
           >
             <option value="-last_active">Most Active</option>
             <option value="-created_at">Newest</option>
@@ -129,7 +129,7 @@ export default function ProfilesPage() {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-80 bg-gray-200 rounded-2xl animate-pulse"></div>
+            <div key={i} className="h-80 bg-primary-soft/50 rounded-2xl animate-pulse"></div>
           ))}
         </div>
       )}

@@ -44,7 +44,7 @@ export default function CreateProfilePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded shadow-md w-full max-w-lg space-y-4">
         <h1 className="text-2xl font-bold text-center">Create Your Profile</h1>
         <input {...register('full_name')} placeholder="Full Name" className="w-full p-2 border rounded" />
@@ -90,7 +90,7 @@ export default function CreateProfilePage() {
           <option value="abroad">Abroad</option>
           <option value="flexible">Flexible</option>
         </select>
-        <button type="submit" disabled={isSubmitting} className="w-full bg-teal-600 text-white py-2 rounded">
+        <button type="submit" disabled={isSubmitting} className="w-full bg-primary text-white py-2 rounded">
           {isSubmitting ? 'Creating...' : 'Create Profile'}
         </button>
         {error && <p className="text-red-500">{error}</p>}

@@ -47,7 +47,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Login to Illaram</h1>
         {step === 'phone' ? (
@@ -62,7 +62,7 @@ export default function LoginPage() {
             <button
               onClick={requestOtp}
               disabled={loading || !phone}
-              className="w-full bg-teal-600 text-white py-2 rounded disabled:opacity-50"
+              className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Request OTP'}
             </button>
@@ -79,7 +79,7 @@ export default function LoginPage() {
             <button
               onClick={verifyOtp}
               disabled={loading || !otp}
-              className="w-full bg-teal-600 text-white py-2 rounded disabled:opacity-50"
+              className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
             >
               {loading ? 'Verifying...' : 'Verify OTP'}
             </button>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, Noto_Sans_Tamil } from "next/font/google";
 import "./globals.css";
 import Providers from './providers';
 import Navbar from '@/components/Navbar';
@@ -8,6 +8,7 @@ import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const notoTamil = Noto_Sans_Tamil({ subsets: ["tamil"], variable: "--font-tamil" });
 
 const siteUrl = "https://www.illaram.com"; // Replace with your actual domain
 
@@ -66,14 +67,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0F5C5E",
+  themeColor: "#FF8B6B",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${notoTamil.variable}`}>
       <body>
         <Providers>
           <Navbar />

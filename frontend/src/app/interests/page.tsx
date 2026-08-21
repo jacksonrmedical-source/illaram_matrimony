@@ -108,7 +108,7 @@ export default function InterestsPage() {
                       {tab === 'received' ? interest.sender_name || interest.sender : interest.receiver_name || interest.receiver}
                     </h3>
                     <p className="text-sm text-muted">
-                      {interest.status}{interest.photo_request && ' · Photo requested'}
+                      {interest.status}{interest.photo_request && ' Â· Photo requested'}
                     </p>
                     <p className="text-xs text-muted">{new Date(interest.created_at).toLocaleString()}</p>
                   </div>
@@ -124,7 +124,7 @@ export default function InterestsPage() {
                         </button>
                         <button
                           onClick={() => declineMutation.mutate(interest.id)}
-                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium"
+                          className="bg-primary-soft/30 text-charcoal px-4 py-2 rounded-xl text-sm font-medium"
                         >
                           Decline
                         </button>

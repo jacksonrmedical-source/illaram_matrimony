@@ -106,7 +106,7 @@ export default function PremiumPage() {
     <AuthGuard>
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-4">Upgrade to Premium</h1>
-        <p className="text-gray-600 mb-8">
+        <p className="text-muted mb-8">
           Unlock unlimited interests, chat with matches, and get verified badges.
         </p>
 
@@ -117,12 +117,12 @@ export default function PremiumPage() {
           {plans.map((plan) => (
             <div key={plan.id} className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold">{plan.name}</h2>
-              <p className="text-3xl font-bold text-teal-600 my-2">₹{plan.price_inr}</p>
-              <p className="text-sm text-gray-500">{plan.duration_days} days</p>
+              <p className="text-3xl font-bold text-primary my-2">â‚¹{plan.price_inr}</p>
+              <p className="text-sm text-muted">{plan.duration_days} days</p>
               <button
                 onClick={() => handleSubscribe(plan)}
                 disabled={processing}
-                className="mt-4 w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700 disabled:opacity-50"
+                className="mt-4 w-full bg-primary text-white py-2 rounded hover:bg-primary-dark disabled:opacity-50"
               >
                 {processing ? 'Processing...' : 'Subscribe'}
               </button>
@@ -130,8 +130,8 @@ export default function PremiumPage() {
           ))}
         </div>
 
-        <div className="mt-8 text-sm text-gray-500">
-          <Link href="/profiles" className="text-teal-600">← Back to Profiles</Link>
+        <div className="mt-8 text-sm text-muted">
+          <Link href="/profiles" className="text-primary">â† Back to Profiles</Link>
         </div>
       </div>
     </AuthGuard>
