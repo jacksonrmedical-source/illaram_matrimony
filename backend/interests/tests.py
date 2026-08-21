@@ -64,6 +64,9 @@ class InterestsTests(APITestCase):
     def test_premium_unlimited_interests(self):
         # Make user1 premium
         self.user1.is_premium = True
+        from django.utils import timezone as tz
+        from datetime import timedelta
+        self.user1.premium_expiry = tz.now() + timedelta(days=30)
         self.user1.save()
         # Create 6 receivers and send interests; all should succeed
         for i in range(6):

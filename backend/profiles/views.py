@@ -42,20 +42,19 @@ class IndividualProfileViewSet(viewsets.ModelViewSet):
             return IndividualProfile.objects.none()
         allowed_gender = gender_map[my_gender]
 
-        # Apply gender filter
         qs = qs.filter(gender=allowed_gender)
 
-        # Explicit gender query param can only narrow further, not widen
         explicit_gender = self.request.query_params.get('gender')
         if explicit_gender:
-            if explicit_gender not in [allowed_gender]:
+            if explicit_gender != allowed_gender:
                 return IndividualProfile.objects.none()
-            qs = qs.filter(gender=explicit_gender)
-
         return qs
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     @action(detail=False, methods=['get'])
     def me(self, request):
-        """Return the current user's individual profile."""
         if not hasattr(request.user, 'individual_profile'):
             return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(request.user.individual_profile)
@@ -119,7 +118,7 @@ class FamilyLinkViewSet(viewsets.ModelViewSet):
             link.status = 'approved'
             link.save()
             return Response(FamilyLinkSerializer(link).data)
-        return Response({"detail": "Not allowed"}, status=403)
+        return Response({"detail": "You do not have permission to approve this request."}, status=403)
 
     @action(detail=True, methods=['post'])
     def revoke(self, request, pk=None):
@@ -129,7 +128,7 @@ class FamilyLinkViewSet(viewsets.ModelViewSet):
             link.status = 'revoked'
             link.save()
             return Response(FamilyLinkSerializer(link).data)
-        return Response({"detail": "Not allowed"}, status=403)
+        return Response({"detail": "You do not have permission to revoke this request."}, status=403)
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
@@ -153,18 +152,22 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def view(self, request, pk=None):
         photo = get_object_or_404(Photo, pk=pk)
         user = request.user
+
         if hasattr(user, 'individual_profile') and photo.profile == user.individual_profile:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
+
         from interests.models import Interest
         mutual = False
         if hasattr(user, 'individual_profile'):
             mutual = Interest.objects.filter(sender=user.individual_profile, receiver=photo.profile, status='accepted').exists() or \
                      Interest.objects.filter(sender=photo.profile, receiver=user.individual_profile, status='accepted').exists()
+
         if mutual:
             return FileResponse(photo.image.open(), content_type='image/jpeg')
-        if photo.blurred_image:
-            return FileResponse(photo.blurred_image.open(), content_type='image/jpeg')
-        return Response({"detail": "Blurred image not available"}, status=404)
+        else:
+            if photo.blurred_image:
+                return FileResponse(photo.blurred_image.open(), content_type='image/jpeg')
+            return Response({"detail": "Blurred image not available"}, status=404)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def set_primary(self, request, pk=None):

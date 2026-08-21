@@ -100,3 +100,36 @@ class GenderDiscoveryTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 0)
+
+
+class AgeValidationTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(phone='7777777777', password='testpass123', role='individual')
+
+    def test_male_under_21_rejected(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('individualprofile-list')
+        data = {
+            'full_name': 'Young Male',
+            'gender': 'male',
+            'date_of_birth': '2005-12-31',  # under 21 if current date is 2026
+            'location_city': 'Chennai',
+            'location_country': 'India',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('date_of_birth', response.data)
+
+    def test_female_under_18_rejected(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse('individualprofile-list')
+        data = {
+            'full_name': 'Young Female',
+            'gender': 'female',
+            'date_of_birth': '2010-12-31',
+            'location_city': 'Chennai',
+            'location_country': 'India',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('date_of_birth', response.data)

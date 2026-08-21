@@ -38,14 +38,10 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
         return int((filled / len(important_fields)) * 100)
 
     def get_is_selfie_verified(self, obj):
-        return obj.user.verifications.filter(
-            verification_type='selfie', status='approved'
-        ).exists()
+        return obj.user.verifications.filter(verification_type='selfie', status='approved').exists()
 
     def get_is_govt_id_verified(self, obj):
-        return obj.user.verifications.filter(
-            verification_type='government_id', status='approved'
-        ).exists()
+        return obj.user.verifications.filter(verification_type='government_id', status='approved').exists()
 
     def get_verification_badges(self, obj):
         badges = []
@@ -63,6 +59,21 @@ class IndividualProfileSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(photo.blurred_image.url)
             return photo.blurred_image.url
         return None
+
+    def validate(self, attrs):
+        from datetime import date
+        gender = attrs.get('gender', getattr(self.instance, 'gender', None))
+        dob = attrs.get('date_of_birth', getattr(self.instance, 'date_of_birth', None))
+        if gender and dob:
+            today = date.today()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if gender == 'male' and age < 21:
+                raise serializers.ValidationError({'date_of_birth': 'Male profiles must be at least 21 years old.'})
+            elif gender == 'female' and age < 18:
+                raise serializers.ValidationError({'date_of_birth': 'Female profiles must be at least 18 years old.'})
+            elif gender == 'other' and age < 18:
+                raise serializers.ValidationError({'date_of_birth': 'Profiles must be at least 18 years old.'})
+        return attrs
 
 
 class ParentProfileSerializer(serializers.ModelSerializer):
